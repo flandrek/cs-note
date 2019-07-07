@@ -945,3 +945,98 @@ public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
 }
 ```
 
+
+
+#### 二叉树中的最大路径和-124
+
+给定一个**非空**二叉树，返回其最大路径和。本题中，路径被定义为一条从树中任意节点出发，达到任意节点的序列。该路径**至少包含一个**节点，且不一定经过根节点。
+
+```
+输入: [-10,9,20,null,null,15,7]
+
+   -10
+   / \
+  9  20
+    /  \
+   15   7
+
+输出: 42
+```
+
+**递归：**首先，考虑实现一个简化的函数 `max_gain(node)` ，参数是一个顶点，计算它及其子树的最大贡献。
+
+![img](E:\markdown笔记\图片\45568450c1b869362937807e70ebb3c287380e9eaf78ae3600040ad83cb7a267-124_gains.png)
+
+因此如果可知最后的最大路径和包含 `root` ，那么答案就是 `max_gain(root)`。
+
+然而，最大陆军可能并不包括根节点，比如下面的这棵树：
+
+![img](E:\markdown笔记\图片\f5c2c1de7252473f7030373375edf4c8ca5e791f4b91fb8d314e39adb77b3bf9-124_max_path.png)
+
+这意味着我们要修改上面的函数，在每一步都检查哪种选择更好：是继续当前路径或者以当前节点作为最高节点计算新的路径。
+
+初始化 max_sum 为最小可能的整数并调用函数 max_gain(node = root)。
+
+1. 实现 max_gain(node) 检查是继续旧路径还是开始新路径：
+2. 边界情况：如果节点为空，那么最大权值是 0 。
+3. 对该节点的所有孩子递归调用 max_gain，计算从左右子树的最大权值：left_gain = max(max_gain(node.left), 0) 和 right_gain = max(max_gain(node.right), 0)。
+4. 检查是维护旧路径还是创建新路径。创建新路径的权值是：price_newpath = node.val + left_gain + right_gain，当新路径更好的时候更新 max_sum。
+5. 对于递归返回的到当前节点的一条最大路径，计算结果为：node.val + max(left_gain, right_gain)。
+
+- 时间复杂度：O(N) 其中 N 是结点个数。我们对每个节点访问不超过 2 次。
+- 空间复杂度：O(log(N))。我们需要一个大小与树的高度相等的栈开销，对于二叉树空间开销是 O(log(N))。
+
+```java
+class Solution {
+  int max_sum = Integer.MIN_VALUE;
+
+  public int max_gain(TreeNode node) {
+    if (node == null) return 0;
+    int left_gain = Math.max(max_gain(node.left), 0);
+    int right_gain = Math.max(max_gain(node.right), 0);
+    // the price to start a new path where `node` is a highest node
+    int price_newpath = node.val + left_gain + right_gain;
+    // update max_sum if it's better to start a new path
+    max_sum = Math.max(max_sum, price_newpath);
+    // for recursion :
+    // return the max gain if continue the same path
+    return node.val + Math.max(left_gain, right_gain);
+  }
+  public int maxPathSum(TreeNode root) {
+    max_gain(root);
+    return max_sum;
+  }
+}
+```
+
+根据题意，最大路径和可能出现在：
+
+1. 左子树中
+2. 右子树中
+3. 包含根节点与左右子树
+
+我们的思路是递归从bottom向topreturn的过程中，记录左子树和右子树中路径更大的那个，并向父节点提供当前节点和子树组成的最大值。
+**递归设计：**
+
+1. 返回值：(root.val) + max(left, right) 即此节点与左右子树最大值之和，较差的解直接被舍弃，不会再被用到。
+2. 需要注意的是，若计算结果 tmp <= 0，意味着对根节点有负贡献，不会在任何情况选这条路（父节点止），因此返回 0。递归终止条件：越过叶子节点，返回 0；
+3. 记录最大值：当前节点最大值 = root.val + left + right。最终返回所有路径中的全局最大值即可。
+
+```java
+class Solution {
+    private int max = Integer.MIN_VALUE;
+    public int maxPathSum(TreeNode root) {
+        maxPath(root);
+        return max;
+    }
+    private int maxPath(TreeNode root){
+        if(root == null) return 0;
+        int left = maxPath(root.left);
+        int right = maxPath(root.right);
+        max = Math.max(root.val + left + right, max);
+        int tmp = Math.max(left, right) + root.val;
+        return tmp > 0 ? tmp : 0;
+    }
+}
+```
+

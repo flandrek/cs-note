@@ -186,3 +186,67 @@ public class Solution {
 }
 ```
 
+
+
+#### 有效的括号-20
+
+给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串，判断字符串是否有效。
+
+有效字符串需满足：
+
+1. 左括号必须用相同类型的右括号闭合。
+2. 左括号必须以正确的顺序闭合。
+3. 注意空字符串可被认为是有效字符串。
+
+```
+输入: "()[]{}"
+输出: true
+输入: "([)]"
+输出: false
+```
+
+```java
+class Solution {
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+        char[] chars = s.toCharArray();
+        for (char aChar : chars) {
+            if (stack.size() == 0) {
+                stack.push(aChar);
+            } else if (isSym(stack.peek(), aChar)) {
+                stack.pop();
+            } else {
+                stack.push(aChar);
+            }
+        }
+        return stack.size() == 0;
+    }
+    
+    private boolean isSym(char c1, char c2) {
+        return (c1 == '(' && c2 == ')') || (c1 == '[' && c2 == ']') 
+            || (c1 == '{' && c2 == '}');
+    }
+}
+```
+
+匹配问题，我们一般使用 **栈**
+
+遍历字符串，我们把左括号压入栈中，当遇到右括号，和栈顶元素比较！
+
+时间复杂度：O(n)；空间复杂度：O(n)
+
+```java
+class Solution {
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<Character>();
+        for (char alp : s.toCharArray()) {
+            if (alp == '(') stack.push(')');
+            else if (alp == '[') stack.push(']');
+            else if (alp == '{') stack.push('}');
+            else if (stack.isEmpty() || stack.pop() != alp) return false;
+        }
+        return stack.isEmpty();      
+    }
+}
+```
+

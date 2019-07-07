@@ -86,3 +86,144 @@ class Solution {
 }
 ```
 
+
+
+#### 矩阵中的最长递增路径-329
+
+给定一个整数矩阵，找出最长递增路径的长度。
+
+对于每个单元格，你可以往上，下，左，右四个方向移动。 你不能在对角线方向上移动或移动到边界外（即不允许环绕）。
+
+```
+输入: nums = 
+[
+  [9,9,4],
+  [6,6,8],
+  [2,1,1]
+] 
+输出: 4 
+解释: 最长递增路径为 [1, 2, 6, 9]。
+```
+
+```
+输入: nums = 
+[
+  [3,4,5],
+  [3,2,6],
+  [2,2,1]
+] 
+输出: 4 
+解释: 最长递增路径是 [3, 4, 5, 6]。注意不允许在对角线方向上移动。
+```
+
+**思路：**
+
+1. 先深度优先搜索每一个单元格；
+2. 将每一个单元格和它旁边的四个方向的内容进行比较，跳过越界的和小的格子；
+3. 得到每个格子的最大长度；
+4. 使用 matrix[x] [y] <= matrix[i] [j]，就不用使用 visited [m] [n] 了；
+5. 把得到的最大值都存储起来，遍历得到全局最大值；
+
+```java
+public static final int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+
+public int longestIncreasingPath(int[][] matrix) {
+    if(matrix.length == 0) return 0;
+    int m = matrix.length, n = matrix[0].length;
+    int[][] cache = new int[m][n];
+    int max = 1;
+    for(int i = 0; i < m; i++) {
+        for(int j = 0; j < n; j++) {
+            int len = dfs(matrix, i, j, m, n, cache);
+            max = Math.max(max, len);
+        }
+    }   
+    return max;
+}
+
+public int dfs(int[][] matrix, int i, int j, int m, int n, int[][] cache) {
+    if(cache[i][j] != 0) return cache[i][j];
+    int max = 1;
+    for(int[] dir: dirs) {
+        int x = i + dir[0], y = j + dir[1];
+        if(x < 0 || x >= m || y < 0 || y >= n || matrix[x][y] <= matrix[i][j]) continue;
+        int len = 1 + dfs(matrix, x, y, m, n, cache);
+        max = Math.max(max, len);
+    }
+    cache[i][j] = max;
+    return max;
+}
+```
+
+
+
+#### 被围绕的区域-130
+
+给定一个二维的矩阵，包含 `'X'` 和 `'O'`（**字母 O**）。
+
+找到所有被 `'X'` 围绕的区域，并将这些区域里所有的 `'O'` 用 `'X'` 填充。
+
+解释:
+
+被围绕的区间不会存在于边界上，换句话说，任何边界上的 'O' 都不会被填充为 'X'。 任何不在边界上，或不与边界上的 'O' 相连的 'O' 最终都会被填充为 'X'。如果两个元素在水平或垂直方向相邻，则称它们是“相连”的。
+
+```
+输入：
+X X X X
+X O O X
+X X O X
+X O X X
+输出：
+X X X X
+X X X X
+X X X X
+X O X X
+```
+
+**思路：**
+
+被围绕的区间不会存在于边界上，换句话说，任何边界上的 'O' 都不会被填充为 'X'。 任何不在边界上，或不与边界上的 'O' 相连的 'O' 最终都会被填充为 'X'。如果两个元素在水平或垂直方向相邻，则称它们是“相连”的。
+
+该题目需要将所有被X包围的O找出来，那剩下的O就是连接起来与边界连通的O。直接找出来所有被X包围的O并不好找，但是我们可以用排除法：先找到所有连接起来与边界连通的O，将这些O标记一下，然后遍历数组，所有没有被标记的O就是我们要找的O。
+
+首先对矩阵边界上所有的O做深度优先搜索，将相连的O更改为-，然后编辑数组，将数组中O更改为X，将数组中-更改为O。
+
+```java
+class Solution {
+    int row, col;
+    public void solve(char[][] board) {
+        if(board == null || board.length == 0) return;
+        row = board.length;
+        col = board[0].length;
+        for(int i = 0; i < row; i++){    //对第一列和最后一列的所有O进行深度优先搜索
+                dfs(board, i, 0);
+                dfs(board, i, col-1);
+        }
+        for(int j = 0; j < col; j++){    //对第一行和最后一行的所有O进行深度优先搜索
+                dfs(board, 0, j);
+                dfs(board, row-1, j);
+        }
+        for(int i = 0; i < row; i++){    //遍历矩阵，将O变为X，将-变为O
+            for(int j = 0; j < col; j++){
+                if(board[i][j] == 'O') board[i][j]='X';
+                if(board[i][j]=='-') board[i][j]='O';
+            }
+        }
+        return;
+    }
+  /**
+  * 使用递归进行深度优先搜索
+  */
+    public void dfs(char[][] board, int i, int j){
+        if(i < 0 || j < 0 || i >= row || j >= col || board[i][j] != 'O') //递归终止条件判断
+            return;
+        board[i][j] = '-';    //将当前O更改为-
+        dfs(board, i-1, j);   //递归该点上方的点
+        dfs(board, i+1, j);   //递归该点下方的点
+        dfs(board, i, j-1);   //递归该点左边的点
+        dfs(board, i, j+1);   //递归该点右边的点
+        return;
+    }
+}
+```
+

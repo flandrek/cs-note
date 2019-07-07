@@ -68,7 +68,7 @@ private int binarySearch(int[] tails, int len, int key) {
 
 假设按照升序排序的数组在预先未知的某个点上进行了旋转。例如，数组 [0,1,2,4,5,6,7] 可能变为 [4,5,6,7,0,1,2] 
 
-搜索一个给定的目标值，如果数组中存在这个目标值，则返回它的索引，否则返回 -1 。你可以假设数组中**不存在重复的元素。**你的算法时间复杂度必须是 O(log n) 级别。
+搜索一个给定的目标值，如果数组中存在这个目标值，则返回它的索引，否则返回 -1 。你可以假设数组中**不存在重复的元素。**你的算法时间复杂度必须是 O (log n) 级别。
 
 ```
 输入: nums = [4,5,6,7,0,1,2], target = 0
@@ -77,7 +77,7 @@ private int binarySearch(int[] tails, int len, int key) {
 输出: -1
 ```
 
-思路一：
+**思路一：**
 
 整体思路：先用二分法找出最小值，也是那个分割点,例如 [4,5,6,7,0,1,2]，我们找出数字 0；
 
@@ -111,7 +111,7 @@ class Solution {
 }
 ```
 
-思路二：
+**思路二：**
 
 直接使用二分法，判断那个二分点，有几种可能性
 
@@ -152,6 +152,70 @@ class Solution {
     }
 }
 ```
+
+
+
+#### 搜索旋转排序数组II-81
+
+假设按照升序排序的数组在预先未知的某个点上进行了旋转。
+
+( 例如，数组 [0,0,1,2,2,5,6] 可能变为 [2,5,6,0,0,1,2] )。
+
+编写一个函数来判断给定的目标值是否存在于数组中。若存在返回 true，否则返回 false。
+
+```
+输入: nums = [2,5,6,0,0,1,2], target = 0
+输出: true
+输入: nums = [2,5,6,0,0,1,2], target = 3
+输出: false
+```
+
+**进阶:**
+
+- 这是 [搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/description/) 的延伸题目，本题中的 `nums`  可能包含重复元素。
+- 这会影响到程序的时间复杂度吗？会有怎样的影响，为什么？
+
+**思路：**二分法，判断二分点，几种可能性
+
+1. 直接nums[mid] == target
+2. 当数组为[1,2,1,1,1]，nums[mid] == nums[left] == nums[right]，需要 left++，right --；
+3. 当nums[left]<= nums[mid],说明是在左半边的递增区域
+
+	a. nums[left] <=target < nums[mid],说明target在left和mid之间.我们令right = mid - 1;
+	
+	b. 不在之间, 我们令 left = mid + 1;
+
+4. 当nums[mid] < nums[right],说明是在右半边的递增区域
+
+	a. nums[mid] < target <= nums[right],说明target在mid 和right之间,我们令left = mid + 1
+	
+	b. 不在之间,我们令right = mid - 1;
+
+```java
+class Solution {
+    public boolean search(int[] nums, int target) {
+        int left = 0;
+        int right = nums.length - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] == target) return true;
+            if (nums[left] == nums[mid] && nums[mid] == nums[right]) {
+                left++;
+                right--;
+            } else if (nums[left] <= nums[mid]) {
+                if (nums[left] <= target && target < nums[mid]) right = mid - 1;
+                else left = mid + 1;
+            } else {
+                if (nums[mid] < target && target <= nums[right]) left = mid + 1;
+                else right = mid - 1;
+            }
+        }
+        return false;  
+    }
+}
+```
+
+
 
 
 
@@ -228,6 +292,73 @@ class Solution {
             }
         }
         return res;
+    }
+}
+```
+
+
+
+#### 寻找峰值-162
+
+峰值元素是指其值大于左右相邻值的元素。给定一个输入数组 nums，其中 nums[i] ≠ nums[i+1]，找到峰值元素并返回其索引。数组可能包含多个峰值，在这种情况下，返回任何一个峰值所在位置即可。
+
+你可以假设 nums[-1] = nums[n] = -∞。
+
+```
+输入: nums = [1,2,3,1]
+输出: 2
+解释: 3 是峰值元素，你的函数应该返回其索引 
+
+输入: nums = [1,2,1,3,5,6,4]
+输出: 1 或 5 
+解释: 你的函数可以返回索引 1，其峰值元素为 2；
+     或者返回索引 5， 其峰值元素为 6。
+```
+
+**思路：**二分查找找左边界
+
+```java
+class Solution {
+    public int findPeakElement(int[] nums) {
+        int left = 0, right = nums.length -1;
+        while(left < right){
+            int mid = left + ((right - left) >> 1);
+            if(nums[mid] > nums[mid+1]) 
+                right = mid;
+            else left = mid + 1;
+        }
+        return left;
+    }
+}
+```
+
+
+
+#### x 的平方根-69
+
+实现 int sqrt(int x) 函数。计算并返回 x 的平方根，其中 x 是非负整数。由于返回类型是整数，结果只保留整数的部分，小数部分将被舍去。
+
+```
+输入: 8
+输出: 2
+说明: 8 的平方根是 2.82842..., 
+     由于返回类型是整数，小数部分将被舍去。
+```
+
+**思路：**二分法
+
+```java
+class Solution {  
+     public int mySqrt1(int x) {
+        int left = 1;
+        int right = (x / 2) + 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (mid == x / mid) return mid;
+            else if (mid < x / mid) left = mid + 1;
+            else right = mid - 1;
+        }
+        return right;   
     }
 }
 ```

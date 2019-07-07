@@ -1034,3 +1034,443 @@ class Solution {
 }
 ```
 
+
+
+#### 按递增顺序显示卡牌-950
+
+牌组中的每张卡牌都对应有一个唯一的整数。你可以按你想要的顺序对这套卡片进行排序。
+
+最初，这些卡牌在牌组里是正面朝下的（即，未显示状态）。
+
+现在，重复执行以下步骤，直到显示所有卡牌为止：
+
+1. 从牌组顶部抽一张牌，显示它，然后将其从牌组中移出。
+2. 如果牌组中仍有牌，则将下一张处于牌组顶部的牌放在牌组的底部。
+3. 如果仍有未显示的牌，那么返回步骤 1。否则，停止行动。
+4. 返回能以递增顺序显示卡牌的牌组顺序。
+
+答案中的第一张牌被认为处于牌堆顶部。
+
+```
+输入：[17,13,11,2,3,5,7]
+输出：[2,13,3,11,5,17,7]
+解释：
+我们得到的牌组顺序为 [17,13,11,2,3,5,7]（这个顺序不重要），然后将其重新排序。
+重新排序后，牌组以 [2,13,3,11,5,17,7] 开始，其中 2 位于牌组的顶部。
+我们显示 2，然后将 13 移到底部。牌组现在是 [3,11,5,17,7,13]。
+我们显示 3，并将 11 移到底部。牌组现在是 [5,17,7,13,11]。
+我们显示 5，然后将 17 移到底部。牌组现在是 [7,13,11,17]。
+我们显示 7，并将 13 移到底部。牌组现在是 [11,17,13]。
+我们显示 11，然后将 17 移到底部。牌组现在是 [13,17]。
+我们展示 13，然后将 17 移到底部。牌组现在是 [17]。
+我们显示 17。
+由于所有卡片都是按递增顺序排列显示的，所以答案是正确的。
+```
+
+**思路：**此题，乍一眼看上去，一点规律没有，甚至示例看起来都觉得莫名其妙，相信很多人看了这道题都会像我这么觉得，所以此题归属于明显的阅读理解加脑筋急转弯题型。
+
+但是，如果我们从另一个角度去看此题，就会发现此题的意思所在了。于是我们尝试着倒着看示例，我们有一个数组，数组中元素不重复，且按照降序排列，我们称之为卡牌，初始值为[17,13,11,7,5,3,2]，我们有另一个队列，初始为空，我们每次将数组中未放入队列中的最大的数插入到队列中，然后我们把队首元素移到队尾，重复这个过程，直到数组中所有元素都被放入队列中为止。
+第一次，我们选17，[17]->[17]
+第二次，我们选13，[17, 13]->[13, 17]
+第三次，我们选11，[13, 17, 11]->[17, 11, 13]
+第四次，我们选7，[17, 11, 13, 7]->[11, 13, 7, 17]
+第五次，我们选5，[11, 13, 7, 17, 5]->[13, 7, 17, 5, 11]
+第六次，我们选3，[13, 7, 17, 5, 11, 3]->[7, 17, 5, 11, 3, 13]
+第七次，我们选2，[7, 17, 5, 11, 3, 13, 2]，此时，数组中所有元素都在队列中，过程结束。我们需要将这个队列倒过来，于是我们便称这样的队列，是按递增顺序显示卡牌。
+
+于是解题代码如下：
+
+```java
+class Solution {
+    public int[] deckRevealedIncreasing(int[] deck) {
+        if (deck == null || deck.length < 1) {
+            return deck;
+        }        
+        Arrays.sort(deck);// 得到升序排列的数组      
+        Queue<Integer> queue = new LinkedList<>();
+        for (int i = deck.length - 1; i >= 0; i--) {// 倒着遍历，便是按降序访问
+            queue.add(deck[i]);// 选最大值插入队列
+            if (i == 0) {// 数组中所有元素均在队列中，退出过程
+                break;
+            }          
+            queue.add(queue.poll());// 将队头元素插入到队尾中
+        }
+        for (int i = deck.length - 1;i >= 0;i--) {
+            deck[i] = queue.poll();// 倒回去，得到answer
+        }
+        
+        return deck;
+    }
+}
+```
+
+
+
+#### 最短无序连续子数组-581
+
+给定一个整数数组，你需要寻找一个**连续的子数组**，如果对这个子数组进行升序排序，那么整个数组都会变为升序排序。你找到的子数组应是**最短**的，请输出它的长度。
+
+```
+输入: [2, 6, 4, 8, 10, 9, 15]
+输出: 5
+解释: 你只需要对 [6, 4, 8, 10, 9] 进行升序排序，那么整个表都会变为升序排序。
+```
+
+**思路：**
+
+如果最右端的一部分已经排好序，这部分的每个数都比它左边的最大值要大，同理，如果最左端的一部分排好序，这每个数都比它右边的最小值小。
+
+所以我们从左往右遍历，如果 i 位置上的数比它左边部分最大值小，则这个数肯定要排序， 就这样找到右端不用排序的部分，同理找到左端不用排序的部分，它们之间就是需要排序的部分
+
+```java
+class Solution {
+    public int findUnsortedSubarray(int[] arr) {
+        if(arr == null || arr.length < 2){
+			return 0;
+		}
+		int max = Integer.MIN_VALUE;
+		int min = Integer.MAX_VALUE;
+		int R = 0;
+		int L = 0;
+		for (int i = 0; i < arr.length; i++) {
+			if(max > arr[i]) {
+				R = i;
+			}
+			max = Math.max(max, arr[i]);
+		}
+		for (int i = arr.length - 1; i >= 0; i--) {
+			if(min < arr[i]) {
+				L = i;
+			}
+			min = Math.min(min, arr[i]);
+		}
+		return R == L ? 0 : R - L + 1;	
+    }
+}
+```
+
+
+
+#### 两个数组的交集II-350
+
+给定两个数组，编写一个函数来计算它们的交集。
+
+```
+输入: nums1 = [1,2,2,1], nums2 = [2,2]
+输出: [2,2]
+输入: nums1 = [4,9,5], nums2 = [9,4,9,8,4]
+输出: [4,9]
+```
+
+**思路：**使用 HashMap 求交集
+
+```java
+import java.util.*;
+class Solution {
+    public int[] intersect(int[] nums1, int[] nums2) {
+        Map<Integer,Integer> map = new HashMap<>();
+        for(int i = 0; i < nums1.length; i++){
+            map.put(nums1[i],map.getOrDefault(nums1[i],0)+1);
+        }
+        List<Integer> list = new ArrayList<>();
+        for(int i = 0; i < nums2.length; i++){
+            if(map.containsKey(nums2[i]) && map.get(nums2[i]) > 0){
+                list.add(nums2[i]);
+                map.put(nums2[i], map.get(nums2[i])-1);
+            }
+        }
+        int[] res = new int[list.size()];
+        for(int i = 0; i < res.length; i++){
+            res[i] = list.get(i);
+        }
+        return res;
+    }
+}
+```
+
+
+
+#### 寻找峰值-162
+
+峰值元素是指其值大于左右相邻值的元素。给定一个输入数组 nums，其中 nums[i] ≠ nums[i+1]，找到峰值元素并返回其索引。数组可能包含多个峰值，在这种情况下，返回任何一个峰值所在位置即可。
+
+你可以假设 nums[-1] = nums[n] = -∞。
+
+```
+输入: nums = [1,2,3,1]
+输出: 2
+解释: 3 是峰值元素，你的函数应该返回其索引 
+
+输入: nums = [1,2,1,3,5,6,4]
+输出: 1 或 5 
+解释: 你的函数可以返回索引 1，其峰值元素为 2；
+     或者返回索引 5， 其峰值元素为 6。
+```
+
+**思路：**二分查找找左边界
+
+```java
+class Solution {
+    public int findPeakElement(int[] nums) {
+        int left = 0, right = nums.length -1;
+        while(left < right){
+            int mid = left + ((right - left) >> 1);
+            if(nums[mid] > nums[mid+1]) 
+                right = mid;
+            else left = mid + 1;
+        }
+        return left;
+    }
+}
+```
+
+
+
+#### 加一-66
+
+给定一个由整数组成的非空数组所表示的非负整数，在该数的基础上加一。最高位数字存放在数组的首位， 数组中每个元素只存储一个数字。你可以假设除了整数 0 之外，这个整数不会以零开头。
+
+```
+输入: [1,2,3]
+输出: [1,2,4]
+解释: 输入数组表示数字 123。
+输入: [4,3,2,1]
+输出: [4,3,2,2]
+解释: 输入数组表示数字 4321。
+```
+
+**思路：**从后向前每次加一，如果没有出现 0 说明没有进位，可以直接返回，否则就把第一位置 0 且数组长度加一。
+
+```java
+class Solution {
+    public int[] plusOne(int[] digits) {
+        if(digits == null || digits.length == 0) return null;
+        for(int i = digits.length -1; i >= 0; i--){
+            digits[i]++;
+            digits[i] %= 10;
+            if(digits[i] != 0) return digits;
+        }
+        digits = new int[digits.length+1];
+        digits[0] = 1;
+        return digits;
+    }
+}
+```
+
+
+
+#### 滑动窗口的最大值-239
+
+给定一个数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口 k 内的数字。滑动窗口每次只向右移动一位。返回滑动窗口最大值。
+
+```
+输入: nums = [1,3,-1,-3,5,3,6,7], 和 k = 3
+输出: [3,3,5,5,6,7] 
+解释: 
+
+  滑动窗口的位置                最大值
+---------------               -----
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+```
+
+**思路：**
+
+遍历数组，将数存放在双向队列中，并用L,R来标记窗口的左边界和右边界。队列中保存的并不是真的数，而是该数值对应的数组下标位置，并且数组中的数要从大到小排序。
+
+如果当前遍历的数比队尾的值大，则需要弹出队尾值，直到队列重新满足从大到小的要求。
+
+1. 如果遇到的数字比队列中所有的数字都大，那么它就是最大值，其它数字不可能是最大值了，将队列中的所有数字清空，放入该数字，该数字位于队列头部；
+2. 如果遇到的数字比队列中的所有数字都小，那么它还有可能成为之后滑动窗口的最大值，放入队列的末尾；
+3. 如果遇到的数字比队列中最大值小，最小值大，那么将比它小数字不可能成为最大值了，删除较小的数字，放入该数字。
+
+刚开始遍历时，L和R都为0，有一个形成窗口的过程，此过程没有最大值，L不动，R向右移。当窗口大小形成时，L和R一起向右移，每次移动时，判断队首的值的数组下标是否在[L,R]中，如果不在则需要弹出队首的值，当前窗口的最大值即为队首的数。
+
+```html
+输入: nums = [1,3,-1,-3,5,3,6,7], 和 k = 3
+输出: [3,3,5,5,6,7]
+
+解释过程中队列中都是具体的值，方便理解，具体见代码。
+初始状态：L=R=0,队列:{}
+i=0,nums[0]=1。队列为空,直接加入。队列：{1}
+i=1,nums[1]=3。队尾值为1，3>1，弹出队尾值，加入3。队列：{3}
+i=2,nums[2]=-1。队尾值为3，-1<3，直接加入。队列：{3,-1}。此时窗口已经形成，L=0,R=2，result=[3]
+i=3,nums[3]=-3。队尾值为-1，-3<-1，直接加入。队列：{3,-1,-3}。队首3对应的下标为1，L=1,R=3，有效。result=[3,3]
+i=4,nums[4]=5。队尾值为-3，5>-3，依次弹出后加入。队列：{5}。此时L=2,R=4，有效。result=[3,3,5]
+i=5,nums[5]=3。队尾值为5，3<5，直接加入。队列：{5,3}。此时L=3,R=5，有效。result=[3,3,5,5]
+i=6,nums[6]=6。队尾值为3，6>3，依次弹出后加入。队列：{6}。此时L=4,R=6，有效。result=[3,3,5,5,6]
+i=7,nums[7]=7。队尾值为6，7>6，弹出队尾值后加入。队列：{7}。此时L=5,R=7，有效。result=[3,3,5,5,6,7]
+```
+
+```java
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        if(nums == null || nums.length < 2) return nums;
+        // 双向队列 保存当前窗口最大值的数组位置 保证队列中数组位置的数值按从大到小排序
+        LinkedList<Integer> queue = new LinkedList();
+        // 结果数组
+        int[] result = new int[nums.length-k+1];
+        // 遍历nums数组
+        for(int i = 0;i < nums.length;i++){
+            // 保证从大到小 如果前面数小则需要依次弹出，直至满足要求
+            while(!queue.isEmpty() && nums[queue.peekLast()] <= nums[i]){
+                queue.pollLast();
+            }
+            // 添加当前值对应的数组下标
+            queue.addLast(i);
+            // 判断当前队列中队首的值是否有效
+            if(queue.peek() <= i-k){
+                queue.poll();   
+            } 
+            // 当窗口长度为k时 保存当前窗口中最大值
+            if(i+1 >= k){
+                result[i+1-k] = nums[queue.peek()];
+            }
+        }
+        return result;
+    }
+}
+```
+
+
+
+#### 旋转数组-189
+
+给定一个数组，将数组中的元素向右移动 *k* 个位置，其中 *k* 是非负数。
+
+```
+输入: [1,2,3,4,5,6,7] 和 k = 3
+输出: [5,6,7,1,2,3,4]
+解释:
+向右旋转 1 步: [7,1,2,3,4,5,6]
+向右旋转 2 步: [6,7,1,2,3,4,5]
+向右旋转 3 步: [5,6,7,1,2,3,4]
+
+输入: [-1,-100,3,99] 和 k = 2
+输出: [3,99,-1,-100]
+解释: 
+向右旋转 1 步: [99,-1,-100,3]
+向右旋转 2 步: [3,99,-1,-100]
+```
+
+**方法一：**使用额外的数组
+
+```java
+public class Solution {
+    public void rotate(int[] nums, int k) {
+        int[] a = new int[nums.length];
+        for (int i = 0; i < nums.length; i++) {
+            a[(i + k) % nums.length] = nums[i];
+        }
+        for (int i = 0; i < nums.length; i++) {
+            nums[i] = a[i];
+        }
+    }
+}
+```
+
+**方法二：**使用反转
+
+这个方法基于这个事实：当我们旋转数组 k 次，k % n 个尾部元素会被移动到头部，剩下的元素会被向后移动。
+
+在这个方法中，我们首先将所有元素反转。然后反转前 k 个元素，再反转后面 n−k 个元素，就能得到想要的结果。
+
+```
+原始数组                  : 1 2 3 4 5 6 7
+反转所有数字后             : 7 6 5 4 3 2 1
+反转前 k 个数字后          : 5 6 7 4 3 2 1
+反转后 n-k 个数字后        : 5 6 7 1 2 3 4 --> 结果
+```
+
+```java
+public class Solution {
+    public void rotate(int[] nums, int k) {
+        k %= nums.length;
+        reverse(nums, 0, nums.length - 1);
+        reverse(nums, 0, k - 1);
+        reverse(nums, k, nums.length - 1);
+    }
+    public void reverse(int[] nums, int start, int end) {
+        while (start < end) {
+            int temp = nums[start];
+            nums[start] = nums[end];
+            nums[end] = temp;
+            start++;
+            end--;
+        }
+    }
+}
+```
+
+
+
+#### 螺旋矩阵-54
+
+给定一个包含 *m* x *n* 个元素的矩阵（*m* 行, *n* 列），请按照顺时针螺旋顺序，返回矩阵中的所有元素。
+
+```
+输入:
+[
+ [ 1, 2, 3 ],
+ [ 4, 5, 6 ],
+ [ 7, 8, 9 ]
+]
+输出: [1,2,3,6,9,8,7,4,5]
+```
+
+**思路：**模拟过程
+
+```java
+import java.util.*;
+class Solution {
+    public List<Integer> spiralOrder(int[][] matrix) {
+        List<Integer> res = new ArrayList<>();
+        if(matrix == null || matrix.length == 0) return res;
+        int rows = matrix.length, cols = matrix[0].length;
+        int up_row = 0, down_row = rows - 1, left_col = 0, right_col = cols - 1;
+        while(up_row <= down_row && left_col <= right_col){
+            for(int i = left_col; i <= right_col; i++) res.add(matrix[up_row][i]);
+            up_row++;
+            if(up_row > down_row) break;
+            for(int i = up_row; i <= down_row; i++) res.add(matrix[i][right_col]);
+            right_col--;
+            if(right_col < left_col) break;
+            for(int i = right_col; i >= left_col; i--) res.add(matrix[down_row][i]);
+            down_row--;
+            for(int i = down_row; i >= up_row; i--) res.add(matrix[i][left_col]);
+            left_col++;
+        }
+        return res;
+    }  
+    // public List<Integer> spiralOrder(int[][] matrix) {
+    //     if (matrix == null || matrix.length == 0) return new ArrayList<>();
+    //     List<Integer> res = new ArrayList<>();
+    //     int shang_row = 0;
+    //     int xia_row = matrix.length - 1;
+    //     int zou_col = 0;
+    //     int you_col = matrix[0].length - 1;
+    //     while (shang_row <= xia_row && zou_col <= you_col) {
+    //         // 从左到右
+    //         for (int i = zou_col; i <= you_col; i++) res.add(matrix[shang_row][i]);
+    //         shang_row++;
+    //         if (shang_row > xia_row) break;
+    //         // 从上到下
+    //         for (int i = shang_row; i <= xia_row; i++) res.add(matrix[i][you_col]);
+    //         you_col--;
+    //         if (zou_col > you_col) break;
+    //         // 从右到左
+    //         for (int i = you_col; i >= zou_col; i--) res.add(matrix[xia_row][i]);
+    //         xia_row--;
+    //         //从下到上
+    //         for (int i = xia_row; i >= shang_row; i--) res.add(matrix[i][zou_col]);
+    //         zou_col++;
+    //     }
+    //     return res;
+    // }
+}
+```
+

@@ -207,6 +207,22 @@ The minimum path sum from top to bottom is 11 (i.e., 2 + 3 + 5 + 1 = 11).
 ]
 ```
 
+时间复杂度 O (n^2)，空间复杂度 O (n)。
+
+```java
+public int minimumTotal(List<List<Integer>> triangle) {
+    int[] A = new int[triangle.size()+1];
+    for(int i=triangle.size()-1;i>=0;i--){
+        for(int j=0;j<triangle.get(i).size();j++){
+            A[j] = Math.min(A[j],A[j+1])+triangle.get(i).get(j);
+        }
+    }
+    return A[0];
+}
+```
+
+**不用额外空间：**
+
 ```java
 import java.util.*;
 public class Solution {
@@ -861,6 +877,131 @@ public class Solution {
         }
         return triangle;
     }
+}
+```
+
+
+
+#### 石子游戏-877
+
+亚历克斯和李用几堆石子在做游戏。偶数堆石子排成一行，每堆都有正整数颗石子 piles[i] 。
+
+游戏以谁手中的石子最多来决出胜负。石子的总数是奇数，所以没有平局。
+
+亚历克斯和李轮流进行，亚历克斯先开始。 每回合，玩家从行的开始或结束处取走整堆石头。 这种情况一直持续到没有更多的石子堆为止，此时手中石子最多的玩家获胜。
+
+假设亚历克斯和李都发挥出最佳水平，当亚历克斯赢得比赛时返回 true ，当李赢得比赛时返回 false 。
+
+```
+输入：[5,3,4,5]
+输出：true
+解释：
+亚历克斯先开始，只能拿前 5 颗或后 5 颗石子 。
+假设他取了前 5 颗，这一行就变成了 [3,4,5] 。
+如果李拿走前 3 颗，那么剩下的是 [4,5]，亚历克斯拿走后 5 颗赢得 10 分。
+如果李拿走后 5 颗，那么剩下的是 [3,4]，亚历克斯拿走后 4 颗赢得 9 分。
+这表明，取前 5 颗石子对亚历克斯来说是一个胜利的举动，所以我们返回 true 。
+```
+
+**思路：**
+
+```java
+ dp其实就是存储了递归过程中的数值
+   // dps[i][j]代表从i到j所能获得的最大的绝对分数
+   // （比如为1就说明亚历克斯从i到j可以赢李1分）
+   //  如何计算dps[i][j]呢:max(piles[i]-dp[i+1][j],piles[j]-dp[i][j-1]);
+```
+
+```java
+class Solution {
+    public boolean stoneGame(int[] piles) {
+        //dp其实就是存储了递归过程中的数值
+        //dps[i][j]代表从i到j所能获得的最大的绝对分数
+        //（比如为1就说明亚历克斯从i到j可以赢李1分）
+        //如何计算dps[i][j]呢:max(piles[i]-dp[i+1][j],piles[j]-dp[i][j-1]);
+        //这里减去dps数组是因为李也要找到最大的
+        //最后dps=[5 2 4 1]
+        //        [0 3 1 4]
+        //        [0 0 4 1]
+        //        [0 0 0 5]
+        int n = piles.length;
+        int [][]dps=new int[n][n];
+        //dps[i][i]存储当前i的石子数
+        for(int i = 0; i < n; i++)
+            dps[i][i] = piles[i];
+        //d=1,其实代表，先算两个子的时候
+        for(int d = 1; d < n; d++) {
+            //有多少组要比较
+            for(int j = 0; j < n-d; j++) {
+                //比较j到d+j
+                dps[j][d+j] = Math.max(piles[j]-dps[j+1][d+j],piles[d+j]-dps[j][d+j-1]);
+            }
+        }
+        return dps[0][n-1] > 0;
+    }
+}
+```
+
+
+
+#### 乘积最大子序列-152
+
+给定一个整数数组 `nums` ，找出一个序列中乘积最大的连续子序列（该序列至少包含一个数）。
+
+```
+输入: [2,3,-2,4]
+输出: 6
+解释: 子数组 [2,3] 有最大乘积 6。
+
+输入: [-2,0,-1]
+输出: 0
+解释: 结果不能为 2, 因为 [-2,-1] 不是子数组。
+```
+
+**思路：**
+
+1. 遍历数组时计算当前最大值，不断更新；
+2. 令imax为当前最大值，则当前最大值为 imax = max(imax * nums[i], nums[i])；
+3. 由于存在负数，那么会导致最大的变最小的，最小的变最大的。因此还需要维护当前最小值 imin，imin = min(imin * nums[i], nums[i])；
+4. 当负数出现时则imax与imin进行交换再进行下一步计算；
+
+时间复杂度：O(n)，空间复杂度 O(2n)
+
+```java
+class Solution {
+    public int maxProduct(int[] nums) {
+        int max = Integer.MIN_VALUE, imax = 1, imin = 1;
+        for(int i = 0; i < nums.length; i++){
+            if(nums[i] < 0){ 
+              int tmp = imax;
+              imax = imin;
+              imin = tmp;
+            }
+            imax = Math.max(imax * nums[i], nums[i]);
+            imin = Math.min(imin * nums[i], nums[i]);            
+            max = Math.max(max, imax);
+        }
+        return max;
+    }
+}
+```
+
+**优化空间：**
+
+```java
+public int maxProduct1(int[] nums) {
+    if (nums.length == 0) return 0;
+    if (nums.length == 1) return nums[0];
+    int max, min, retVal, preMax, preMin;
+    retVal = max = min = nums[0];
+    for (int i = 1; i < nums.length; i++) {
+        preMax = max;
+        preMin = min;
+        max = Math.max(nums[i], Math.max(nums[i] * preMax, nums[i] * preMin));
+        min = Math.min(nums[i], Math.min(nums[i] * preMax, nums[i] * preMin));
+        retVal = Math.max(retVal, max);
+    }
+    return retVal;
 }
 ```
 
