@@ -97,6 +97,107 @@ public class Solution {
 
 
 
+#### 两两交换链表中的节点-24
+
+给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。**你不能只是单纯的改变节点内部的值**，而是需要实际的进行节点交换。
+
+```
+给定 1->2->3->4, 你应该返回 2->1->4->3.
+```
+
+**递归：**
+
+![1563008156101](../图片/1563008156101.png)
+
+![1563008165964](../图片/1563008165964.png)
+
+![1563008170759](../图片/1563008170759.png)
+
+![1563008175469](../图片/1563008175469.png)
+
+```java
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        if(head == null || head.next == null){
+            return head;
+        }
+        ListNode temp = head.next;
+        head.next = swapPairs(temp.next);
+        temp.next = head;
+        return temp;
+    }
+}
+```
+
+**迭代：**
+
+```java
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        ListNode pre = new ListNode(0);
+        pre.next = head;
+        ListNode temp = pre;
+        while(temp.next != null && temp.next.next != null) {
+            ListNode start = temp.next;
+            ListNode end = temp.next.next;
+            temp.next = end;
+            start.next = end.next;
+            end.next = start;
+            temp = start;
+        }
+        return pre.next;
+    }
+}
+```
+
+
+
+#### K 个一组翻转链表-25
+
+给你一个链表，每 k 个节点一组进行翻转，请你返回翻转后的链表。k 是一个正整数，它的值小于或等于链表的长度。如果节点总数不是 k 的整数倍，那么请将最后剩余的节点保持原有顺序。
+
+```
+示例 :
+
+给定这个链表：1->2->3->4->5
+当 k = 2 时，应当返回: 2->1->4->3->5
+当 k = 3 时，应当返回: 3->2->1->4->5
+```
+
+**递归：**
+
+```java
+class Solution {
+    public ListNode reverseKGroup(ListNode head, int k) {
+        if(head == null) return head;
+        ListNode node = head;
+        // 如果不足K个结点直接返回
+        for(int i = 0; i < k-1; i++) {
+            if(node.next == null) return head;
+            node = node.next;
+        }
+     
+        // 递归reverse后续结点
+        ListNode subNode = reverseKGroup(node.next, k);
+        
+        //将本次前K个结点reverse
+        ListNode pre = head;
+        ListNode now = head.next;
+        for(int i = 0; i < k-1; i++) {
+            ListNode tmp = now.next;
+            now.next = pre;
+            pre = now;
+            now = tmp;
+        }
+        // 连接
+        head.next = subNode;
+        return pre; 
+    }  
+}
+```
+
+
+
 #### 链表排序
 
 使用 *O*(*n* log *n*) 的时间复杂度和 O(1) 的空间复杂度对链表进行排序。
@@ -144,6 +245,62 @@ public class Solution {
         if(l != null) cur.next = l;
         return dummy.next;
     }
+}
+```
+
+
+
+#### 对链表进行插入排序-147
+
+对链表进行插入排序。插入排序的动画演示如上。从第一个元素开始，该链表可以被认为已经部分排序（用黑色表示）。每次迭代时，从输入数据中移除一个元素（用红色表示），并原地将其插入到已排好序的链表中。
+
+
+
+![img](../图片/Insertion-sort-example-300px.gif)
+
+**插入排序算法：**
+
+插入排序是迭代的，每次只移动一个元素，直到所有元素可以形成一个有序的输出列表。
+每次迭代中，插入排序只从输入数据中移除一个待排序的元素，找到它在序列中适当的位置，并将其插入。
+重复直到所有输入数据插入完为止。
+
+```
+输入: 4->2->1->3
+输出: 1->2->3->4
+输入: -1->5->3->4->0
+输出: -1->0->3->4->5
+```
+
+插入排序是两次循环，外层循环是找到待插入元素，内层循环是找到待插入元素在排序好后元素中的插入位置。
+
+这里使用cur代表待插入元素，insert表示待插入位置。 对于每个待插入元素，如果需要插入排好序的元素，则从头开始遍历，找到插入位置，直接插入即可。
+
+```java
+public ListNode insertionSortList(ListNode head) {
+    //两层循环
+    ListNode fakeNode = new ListNode(0), cur = head, insert = fakeNode;
+    fakeNode.next = head;
+    while (cur != null && cur.next != null) {
+        //如果待插入元素大于前一个元素，则不需要改变位置
+        if (cur.val < cur.next.val) {
+            cur = cur.next;
+            continue;
+        }
+        insert = fakeNode;
+        //从头遍历，找到当前待插入元素需要插入的位置
+        while (insert.next.val < cur.next.val) {
+            insert = insert.next;
+        }
+
+        //插入元素
+        ListNode tmp = cur.next;
+        cur.next = tmp.next;
+        tmp.next = insert.next;
+        insert.next = tmp;
+
+    }
+
+    return fakeNode.next;
 }
 ```
 
@@ -429,51 +586,55 @@ class Solution {
 
 
 
-#### **两两交换链表中的节点**
+#### 合并两个有序链表-21
 
-给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。**你不能只是单纯的改变节点内部的值**，而是需要实际的进行节点交换。
+将两个有序链表合并为一个新的有序链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
 
 ```
-给定 1->2->3->4, 你应该返回 2->1->4->3.
+输入：1->2->4, 1->3->4
+输出：1->1->2->3->4->4
 ```
 
-非递归：
+**迭代：**
 
 ```java
 class Solution {
-    public ListNode swapPairs(ListNode head) {
-        ListNode pre = new ListNode(0);		//使用哑节点可以不用判断头结点的特殊情况
-        pre.next = head;
-        ListNode temp = pre;
-        while(temp.next != null && temp.next.next != null) {
-            ListNode start = temp.next;
-            ListNode end = temp.next.next;
-            temp.next = end;
-            start.next = end.next;
-            end.next = start;
-            temp = start;
+    public ListNode mergeTwoLists1(ListNode l1, ListNode l2) {
+        if(l1 == null) return l2;
+        if(l2 == null) return l1;
+        ListNode dummy = new ListNode(0);
+        ListNode cur = dummy;
+        while(l1 != null && l2 != null){
+            if(l1.val < l2.val) {
+                cur.next = l1;
+                l1 = l1.next;
+            }else{
+                cur.next = l2;
+                l2 = l2.next;
+            }
+            cur = cur.next;
         }
-        return pre.next;
+        if(l1 != null) cur.next = l1;
+        if(l2 != null) cur.next = l2;
+        return dummy.next;
     }
 }
 ```
 
-递归：
-
-1. 找终止条件：本题终止条件很明显，当递归到链表为空或者链表只剩一个元素的时候，没得交换了，自然就终止了。
-2. 找返回值：返回给上一层递归的值应该是已经交换完成后的子链表。
-3. 单次的过程：因为递归是重复做一样的事情，所以从宏观上考虑，只用考虑某一步是怎么完成的。我们假设待交换的俩节点分别为head和next，next的应该接受上一级返回的子链表(参考第2步)。就相当于是一个含三个节点的链表交换前两个节点，就很简单了，想不明白的画画图就ok。![128ad64e800b77294cb3b31ed6b97e3b60a786207a1216fee2e41781fa950b42-frame_00003](E:\markdown笔记\图片\128ad64e800b77294cb3b31ed6b97e3b60a786207a1216fee2e41781fa950b42-frame_00003.png)
+**递归：**
 
 ```java
-class Solution {
-    public ListNode swapPairs(ListNode head) {
-        if(head == null || head.next == null){
-            return head;
+class Solution {    
+     public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1 == null) return l2;
+        if(l2 == null) return l1;
+        if(l1.val < l2.val){
+            l1.next = mergeTwoLists(l1.next, l2);
+            return l1;
+        }else{
+            l2.next = mergeTwoLists(l1, l2.next);
+            return l2;
         }
-        ListNode next = head.next;
-        head.next = swapPairs(next.next);
-        next.next = head;
-        return next;
     }
 }
 ```
@@ -878,6 +1039,65 @@ public ListNode oddEvenList(ListNode head) {
 
 
 
+#### 旋转链表-61
+
+给定一个链表，旋转链表，将链表每个节点向右移动 *k* 个位置，其中 *k* 是非负数。
+
+```html
+输入: 1->2->3->4->5->NULL, k = 2
+输出: 4->5->1->2->3->NULL
+解释:
+向右旋转 1 步: 5->1->2->3->4->NULL
+向右旋转 2 步: 4->5->1->2->3->NULL
+
+输入: 0->1->2->NULL, k = 4
+输出: 2->0->1->NULL
+解释:
+向右旋转 1 步: 2->0->1->NULL
+向右旋转 2 步: 1->2->0->NULL
+向右旋转 3 步: 0->1->2->NULL
+向右旋转 4 步: 2->0->1->NULL
+```
+
+链表中的点已经相连，一次旋转操作意味着：
+
+- 先将链表闭合成环
+- 找到相应的位置断开这个环，确定新的链表头和链表尾
+
+![61.png](../图片/e3371c6b03e3c8d3758dcf0b35a45d0a6b39c111373cf7b5bde53e14b6271a04-61.png)
+
+算法
+
+算法实现很直接：
+
+找到旧的尾部并将其与链表头相连 old_tail.next = head，整个链表闭合成环，同时计算出链表的长度 n。
+找到新的尾部，第 (n - k % n - 1) 个节点 ，新的链表头是第 (n - k % n) 个节点。
+断开环 new_tail.next = None，并返回新的链表头 new_head。
+
+```java
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if(head == null || head.next = null || k == 0) return head;
+        ListNode tail = head, cut = head;
+        int len = 1;
+        while(tail.next != null){
+            tail = tail.next;
+            len++;
+        }
+        tail.next = head;
+        k %= len;
+        for(int i = 0; i < len-k-1; i++){
+            cnt = cnt.next;
+        }
+        ListNode res = cnt.next;
+        cnt.next = null;
+        return res;
+    }
+}
+```
+
+
+
 #### 填充每个节点的下一个右侧节点指针-116
 
 给定一个**完美二叉树**，其所有叶子节点都在同一层，每个父节点都有两个子节点。二叉树定义如下：
@@ -895,7 +1115,7 @@ struct Node {
 
 初始状态下，所有 next 指针都被设置为 NULL。
 
-![116_sample[0]](E:\markdown笔记\图片\116_sample[0].png)
+![img](E:\markdown笔记\图片\116_sample.png)
 
 **非递归：**
 
@@ -932,6 +1152,99 @@ class Solution {
         connect(root.left);
         connect(root.right);
         return root;
+    }  
+}
+```
+
+
+
+#### 移除链表元素-203
+
+删除链表中等于给定值 **val** 的所有节点。
+
+```
+输入: 1->2->6->3->4->5->6, val = 6
+输出: 1->2->3->4->5
+```
+
+**思路：**参考删除链表的重复元素，使用虚拟头结点。
+
+```java
+class Solution {
+    public ListNode removeElements(ListNode head, int val) {
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        ListNode pre = dummy;
+        while(pre.next != null){
+            if(pre.next.val == val)
+                pre.next = pre.next.next;
+            else pre = pre.next;
+        }
+        return dummy.next;
+    }
+}
+```
+
+**递归：**
+
+```java
+class Solution{
+    public ListNode removeElements(ListNode head, int val) {
+    	if(head == null) return null;
+        head.next = removeElements(head.next, val);
+        if(head.val == val) return head.next;
+        else return head;
+    }
+}
+```
+
+
+
+#### 重排链表-143
+
+给定一个单链表 L：L0→L1→…→Ln-1→Ln ，
+将其重新排列后变为： L0→Ln→L1→Ln-1→L2→Ln-2→…
+
+你不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。
+
+```
+给定链表 1->2->3->4, 重新排列为 1->4->2->3.
+给定链表 1->2->3->4->5, 重新排列为 1->5->2->4->3.
+```
+
+**思路：**分三步，1.找到中点；2.逆转后半部分；3.拼接前半部分和逆转的后半部分
+
+```java
+class Solution {
+    public void reorderList(ListNode head) {
+        if(head == null) return;
+        ListNode slow = head;
+        ListNode fast = head.next;
+        while(fast != null && fast.next != null){
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        ListNode r = reverse(slow.next);
+        slow.next = null;        
+        ListNode l = head;        
+        while(r != null){	// 找链表的中点，后半部分一定比前半部分短
+            ListNode temp = r.next;
+            r.next = l.next;
+            l.next = r;
+            r = temp;
+            l = l.next.next;
+        }                
+    }
+    
+    public ListNode reverse(ListNode head){
+        ListNode pre = null;
+        while(head != null){
+            ListNode temp = head.next;
+            head.next = pre;
+            pre = head;
+            head = temp;
+        }
+        return pre;
     }  
 }
 ```

@@ -77,6 +77,66 @@ public int minPathSum(int[][] grid) {
 
 
 
+#### 递增的三元子序列-334
+
+给定一个未排序的数组，判断这个数组中是否存在长度为 3 的递增子序列。
+
+数学表达式如下:
+
+如果存在这样的 i, j, k,  且满足 0 ≤ i < j < k ≤ n-1，使得 arr[i] < arr[j] < arr[k] ，返回 true ; 否则返回 false 。
+
+```
+输入: [1,2,3,4,5]
+输出: true
+
+输入: [5,4,3,2,1]
+输出: false
+```
+
+**思路1：**用两个变量保存最小和次小的值，当出现比这两个大的数时，就返回 true
+
+```java
+class Solution {
+    public boolean increasingTriplet(int[] nums) {
+        int a = Integer.MAX_VALUE;
+        int b = Integer.MAX_VALUE;
+        for(int num : nums){
+            if(num <= a) a = num;
+            else if(num <= b) b = num;
+            else return true;
+        }
+        return false;
+    }
+}
+```
+
+**思路2：**动态规划， dp[i] 表示以 i 结尾的最长的递增子序列，则判断 dp[1] - dp[i]，如果有比 dp[i]
+
+小的数，则 dp[i] = Math.max(dp[i], dp[j]+1)；
+
+```java
+class Solution {
+    public boolean increasingTriplet(int[] nums) {
+        int n = nums.length;
+        int[] dp = new int[n];
+        for(int i = 0; i < n; i++) dp[i] = 1;
+        
+        for(int i = 1; i < n; i++){
+            for(int j = i-1; j >= 0; j--){
+                if(nums[j] < nums[i])
+                    dp[i] = Math.max(dp[i], dp[j]+1);
+                if(dp[i] == 3) return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+
+
+
+
 #### **unique-paths-ii**
 
 现在考虑是否在网格中添加了一些障碍。有多少条独特的路径？在网格中，障碍物和空格分别标记为1和0。
@@ -865,10 +925,10 @@ public class Solution {
         List<List<Integer>> triangle = new ArrayList<List<Integer>>();
         if (numRows <= 0)
             return triangle;
-        for (int i=0; i<numRows; i++){
-            List<Integer> row =  new ArrayList<Integer>();
-            for (int j=0; j<i+1; j++){
-                if (j==0 || j==i) row.add(1);
+        for (int i = 0; i< numRows; i++){
+            List<Integer> row = new ArrayList<Integer>();
+            for (int j = 0; j < i+1; j++){
+                if (j == 0 || j== i) row.add(1);
  				else {
                     row.add(triangle.get(i-1).get(j-1) + triangle.get(i-1).get(j));
                 }
@@ -963,7 +1023,7 @@ class Solution {
 1. 遍历数组时计算当前最大值，不断更新；
 2. 令imax为当前最大值，则当前最大值为 imax = max(imax * nums[i], nums[i])；
 3. 由于存在负数，那么会导致最大的变最小的，最小的变最大的。因此还需要维护当前最小值 imin，imin = min(imin * nums[i], nums[i])；
-4. 当负数出现时则imax与imin进行交换再进行下一步计算；
+4. 当负数出现时则 imax 与 imin 进行交换再进行下一步计算；
 
 时间复杂度：O(n)，空间复杂度 O(2n)
 
@@ -1002,6 +1062,490 @@ public int maxProduct1(int[] nums) {
         retVal = Math.max(retVal, max);
     }
     return retVal;
+}
+```
+
+
+
+
+
+#### 零钱兑换-322
+
+给定不同面额的硬币 coins 和一个总金额 amount。编写一个函数来计算可以凑成总金额所需的最少的硬币个数。如果没有任何一种硬币组合能组成总金额，返回 -1。
+
+```
+输入: coins = [1, 2, 5], amount = 11
+输出: 3 
+解释: 11 = 5 + 5 + 1
+
+输入: coins = [2], amount = 3
+输出: -1
+```
+
+**思路：**动态规划，自下而上。
+
+对于迭代解决方法，我们采用自下而上的方式进行思考。在计算 F(i) 之前，我们必须计算金额高达 i 的所有最小计数。在每次迭代中，算法 F(i) 的 i 计算为 min j = 0..n-1 F ( i - cj ) + 1；
+
+![be08e865e1f8f18ea46d9c1990ff1c9](E:\markdown笔记\图片\be08e865e1f8f18ea46d9c1990ff1c9.png)
+
+![1562592847(1)](E:\markdown笔记\图片\1562592847(1).png)
+
+![1562592889(1)](E:\markdown笔记\图片\1562592889(1).png)
+
+```java
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int max = amount + 1;
+        int[] dp = new int[amount+1];
+        Arrays.fill(dp, max);
+        dp[0] = 0;
+        for(int i = 1; i <= amount; i++){
+            for(int j = 0; j < coins.length; j++){
+                if(coins[j] <= i){
+                    dp[i] = Math.min(dp[i], dp[i-coins[j]] + 1);
+                }
+            }
+        }
+        return dp[amount] > amount ? -1 : dp[amount];
+    }
+}
+```
+
+
+
+#### 使用最小花费爬楼梯-746
+
+数组的每个索引做为一个阶梯，第 i个阶梯对应着一个非负数的体力花费值 cost[i]。
+
+每当你爬上一个阶梯你都要花费对应的体力花费值，然后你可以选择继续爬一个阶梯或者爬两个阶梯。
+
+您需要找到达到楼层顶部的最低花费。在开始时，你可以选择从索引为 0 或 1 的元素作为初始阶梯。
+
+```
+输入: cost = [10, 15, 20]
+输出: 15
+解释: 最低花费是从cost[1]开始，然后走两步即可到阶梯顶，一共花费15。
+
+输入: cost = [1, 100, 1, 1, 1, 100, 1, 1, 100, 1]
+输出: 6
+解释: 最低花费方式是从cost[0]开始，逐个经过那些1，跳过cost[3]，一共花费6。
+```
+
+**思路：**
+
+每一个阶梯的最小花费 dp[i] 为前一个阶梯的最小花费 dp[i-1] + cost[i-1]，和前两个阶梯的最小花费 dp[i-2] + cost[i-2]，中的较小值。
+
+```java
+class Solution {
+    public int minCostClimbingStairs(int[] cost) {
+        int n = cost.length;
+        if(n < 2) return 0;
+        int[] dp = new int[n+1];
+        dp[0] = dp[1] = 0;
+        for(int i = 2; i <= n; i++){
+            dp[i] = Math.min(dp[i-1]+cost[i-1], dp[i-2]+cost[i-2]);
+        }
+        return dp[n];
+    }
+}
+
+```
+
+另一种写法：
+
+```java
+public int minCostClimbingStairs(int[] cost) {
+    int[] dp = new int[cost.length];
+    dp[0] = cost[0];
+    dp[1] = Math.min(cost[1], cost[0] + cost[1]);
+    for (int i = 2; i < cost.length; i++) {
+        dp[i] = Math.min(dp[i - 1], dp[i - 2]) + cost[i];
+    }
+    //最后一步是由上一步和上上一步跳过来的，谁耗费体力小返回谁
+    return Math.min(dp[cost.length - 1], dp[cost.length - 2]);
+}
+```
+
+优化空间：
+
+```java
+ public int minCostClimbingStairs(int[] cost) {
+        //如果数组cost的长度小于2返回0
+        int len = cost.length;
+        if(len < 2) return 0; 
+        //如果数组cost的长度等于2返回2个元素中小的那个
+        if(len == 2) return Math.min(cost[0],cost[1]);     
+        //将前两个元素中较小的一个的值和第三个相加
+        for(int i = 2; i < len; i++){
+            cost[i] += Math.min(cost[i - 1],cost[i - 2]);
+        }        
+        //返回最后两个元素中较小的一个
+        return Math.min(cost[len - 2],cost[len - 1]);
+    }
+```
+
+ 
+
+#### 等差数列划分-413
+
+如果一个数列至少有三个元素，并且任意两个相邻元素之差相同，则称该数列为等差数列。
+
+例如，以下数列为等差数列:
+
+```
+1, 3, 5, 7, 9
+7, 7, 7, 7
+3, -1, -5, -9
+```
+
+数组 A 包含 N 个数，且索引从0开始。数组 A 的一个子数组划分为数组 (P, Q)，P 与 Q 是整数且满足 
+
+0 <= P < Q < N 。
+
+如果满足以下条件，则称子数组(P, Q)为等差数组：
+
+元素 A[P], A[p + 1], ..., A[Q - 1], A[Q] 是等差的。并且 P + 1 < Q 。
+
+函数要返回数组 A 中所有为等差数组的子数组个数。
+
+```
+A = [1, 2, 3, 4]
+返回: 3, A 中有三个子等差数组: [1, 2, 3], [2, 3, 4] 以及自身 [1, 2, 3, 4]。
+```
+
+来源：力扣（LeetCode）
+链接：https://leetcode-cn.com/problems/arithmetic-slices
+著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+
+**方法一：**暴力循环
+
+时间复杂度 O (n^2)，空间复杂度 O (1)
+
+只需要判断最后一对元素的差值是不是跟之前区间中的差值相等就可以了。（固定 ss，不断增加 ee)。需要注意的是，一旦当前区间不满足等差数列了，那就不需要继续判断了。
+
+```java
+class Solution {
+    public int numberOfArithmeticSlices(int[] A) {
+        int count = 0;
+        for(int i = 0; i < A.length - 2; i++){
+            int d = A[i+1] - A[i];
+            for(int j = i + 2; j < A.length; j++){
+                if(A[j] - A[j-1] == d) count++;
+                else break;
+            }
+        }
+        return count;
+    }
+}
+```
+
+**方法二：递归**
+
+每次调用 slices，如果第  i 个 元素与前一个元素的差值正好等于之前的差值，我们直接就可以算出新增的等差数组的个数 ap，同时可以更新 sum。但是，如果新元素跟前一个元素的差值不等于之前的差值，也就不会增加等差数列的个数。
+
+- 时间复杂度： O(n) 递归方法最多被调用 n−2 次。
+- 空间复杂度： O(n) 递归树的深度最多为 n-2。
+
+```java
+class Solution {
+    int sum = 0;
+    public int numberOfArithmeticSlices(int[] A) {
+        slices(A, A.length - 1);
+        return sum;
+    }
+    public int slices(int[] A, int i){
+        if(i < 2) return 0;
+        int ap = 0;
+        if(A[i] - A[i-1] == A[i-1] - A[i-2]){
+            ap = 1 + slices(A, i-1);
+            sum += ap;
+        }else{
+            slices(A, i-1);
+        }
+        return ap;
+    } 
+}
+```
+
+**方法三：动态规划**
+
+与递归方法中后向推导不同，我们前向推导 dp 中的值。其余的思路跟上一个方法几乎一样。对于第 i 个元素，判断这个元素跟前一个元素的差值是否和等差数列中的差值相等。如果相等，那么新区间中等差数列的个数即为 1+dp[i-1]，sum 同时也要加上这个值来更新全局的等差数列总数。
+
+时间和空间复杂度均为 O (n)
+
+```java
+class Solution {
+    public int numberOfArithmeticSlices(int[] A) {
+        int[] dp = new int[A.length];
+        int sum = 0;
+        for(int i = 2; i < A.length; i++){
+            if(A[i] - A[i-1] == A[i-1] - A[i-2]){
+                dp[i] = 1 + dp[i-1];
+                sum += dp[i];
+            }
+        }
+        return sum;
+    }
+}
+
+```
+
+由于只要保存前一个状态的值，因此可以使用一个变量来优化空间。
+
+```java
+class Solution {
+    public int numberOfArithmeticSlices(int[] A) {
+        int dp = 0;
+        int sum = 0;
+        for(int i = 2; i < A.length; i++){
+            if(A[i] - A[i-1] == A[i-1] - A[i-2]){
+                dp = 1 + dp;
+                sum += dp;
+            }else dp = 0;
+        }
+        return sum;
+    }
+}
+```
+
+
+
+#### 下降路径最小和-931
+
+给定一个方形整数数组 A，我们想要得到通过 A 的下降路径的最小和。
+
+下降路径可以从第一行中的任何元素开始，并从每一行中选择一个元素。在下一行选择的元素和当前行所选元素最多相隔一列。
+
+```html
+输入：[[1,2,3],[4,5,6],[7,8,9]]
+输出：12
+解释：
+可能的下降路径有：
+[1,4,7], [1,4,8], [1,5,7], [1,5,8], [1,5,9]
+[2,4,7], [2,4,8], [2,5,7], [2,5,8], [2,5,9], [2,6,8], [2,6,9]
+[3,5,7], [3,5,8], [3,5,9], [3,6,8], [3,6,9]
+和最小的下降路径是 [1,4,7]，所以答案是 12。
+```
+
+**动态规划：**时间和空间复杂度均为 O (n^2)
+
+```java
+class Solution {
+    public int minFallingPathSum(int[][] A) {
+        int n = A.length;
+        int res = Integer.MAX_VALUE;
+        int[][] dp = new int[n][n];
+        for(int i = 0; i < n; i++){
+            dp[0][i] = A[0][i];
+        }
+        for(int i = 1; i < n; i++){
+            // 计算第一列
+            dp[i][0] = Math.min(dp[i-1][0], dp[i-1][1]) + A[i][0];
+            // 计算中间列
+            for(int j = 1; j < n-1; j++){
+                dp[i][j] = Math.min(Math.min(dp[i-1][j-1], dp[i-1][j+1]), 
+                                    dp[i-1][j]) + A[i][j];
+            }
+			// 计算最后一列
+            dp[i][n-1] = Math.min(dp[i-1][n-1], dp[i-1][n-2]) + A[i][n-1];
+        }
+        for(int i = 0; i < n; i++){
+            res = Math.min(res, dp[n-1][i]);
+        }
+        return res;
+    }
+}
+```
+
+**优化空间：**每次新的结果只是与前面一行的结果相关。所以我们可以直接用两行来存储结果，dp[2][A.length]的空间已经可以了，每次用一行存储之前的结果，另一行存新的结果。
+
+这样时间复杂度还是O(n^2)，但是空间复杂度降到O(n)。
+
+```java
+class Solution {
+    public int minFallingPathSum(int[][] A){
+        int len = A.length;
+        int[][] dp = new int[2][len];
+        for(int i = 0; i < len; i++){
+            dp[0][i] = A[0][i];
+        }
+        for(int i = 1; i < len; i++){
+            int k = i % 2; // k = 0 or 1
+            // 第一列结果
+            dp[k][0] = Math.min(dp[1-k][0], dp[1-k][1]) + A[i][0];
+            // 中间列结果
+            for(int j = 1; j < len-1; j++){
+                dp[k][j] = Math.min(Math.min(dp[1-k][j-1], dp[1-k][j]), 
+                                    dp[1-k][j+1]) + A[i][j];
+            }
+            // 最后一列结果
+            dp[k][len-1] = Math.min(dp[1-k][len-2], dp[1-k][len-1]) + A[i][len-1];
+        }
+        int res = Integer.MAX_VALUE;
+        int k = (len-1) % 2; // 需要判断最终的结果存在dp中第一行，还是第二行
+        for(int j = 0; j < len; j++){
+            res = Math.min(res, dp[k][j]);
+        }
+        return res;
+    }
+}
+```
+
+**优化空间：允许修改数组**
+
+```java
+class Solution {
+    public int minFallingPathSum(int[][] A) {
+        int N = A.length;
+        for (int r = N-2; r >= 0; --r) {
+            for (int c = 0; c < N; ++c) {
+                // best = min(A[r+1][c-1], A[r+1][c], A[r+1][c+1])
+                int best = A[r+1][c];
+                if (c > 0)
+                    best = Math.min(best, A[r+1][c-1]);
+                if (c+1 < N)
+                    best = Math.min(best, A[r+1][c+1]);
+                A[r][c] += best;
+            }
+        }
+
+        int ans = Integer.MAX_VALUE;
+        for (int x: A[0])
+            ans = Math.min(ans, x);
+        return ans;
+    }
+}
+```
+
+
+
+#### 整数拆分-343
+
+给定一个正整数 *n*，将其拆分为**至少**两个正整数的和，并使这些整数的乘积最大化。 返回你可以获得的最大乘积。
+
+```
+输入: 2
+输出: 1
+解释: 2 = 1 + 1, 1 × 1 = 1。
+
+输入: 10
+输出: 36
+解释: 10 = 3 + 3 + 4, 3 × 3 × 4 = 36。
+```
+
+**思路1：**动态规划
+
+使用动态规划的思想：
+
+1、定义函数f(n)表示为把长度为n的绳子剪成若干段后各段长度乘积的最大值。 
+
+2、对于第一刀，我们有n-1种可能的选择，可推导出 f(n) = max{ f(i) * f(n-i) }; 
+
+3、很明显这是一个从上至下的递归，但是这个递归存在很多重复的计算，所以使用至下而上的动态规划，将子问题的最优解保存。 
+
+4、注意绳子剪成 i x (n-i) 和 (n-i) x i是相同的； 
+
+5、注意不符合切割条件的输入n，以及输入为2、3长度时的结果，因为题中规定 m > 1。
+
+```java
+class Solution {
+    public int integerBreak(int n) {
+        if(n < 2) return 0;
+        if(n == 2) return 1;
+        if(n == 3) return 2;      
+        int[] dp = new int[n+1];
+        dp[0] = 0;
+        dp[1] = 1;
+        dp[2] = 2;
+        dp[3] = 3;       
+        for(int i = 4; i <= n; i++){
+            for(int j = 1; j <= i/2; j++){
+                dp[i] = Math.max(dp[i], dp[j]*dp[i-j]);
+            }
+        }
+        return dp[n];
+    }
+}
+
+```
+
+**思路2：**贪心
+
+当 n >= 5 时，尽可能多地剪长度为3的绳子；当剩下的绳子长度为4时，把绳子剪成两段长度为2的绳子。
+
+```java
+class Solution {
+    public int integerBreak(int n) {
+        if(n == 1) return 1;
+        if(n == 2) return 1;
+        if(n == 3) return 2;
+        if(n == 4) return 4;
+        int res = 1;
+        while(n > 4){
+            res *= 3;
+            n -= 3;
+        }
+        return res * n;
+    }
+}
+```
+
+
+
+#### 最低票价-983
+
+在一个火车旅行很受欢迎的国度，你提前一年计划了一些火车旅行。在接下来的一年里，你要旅行的日子将以一个名为 days 的数组给出。每一项是一个从 1 到 365 的整数。
+
+火车票有三种不同的销售方式：
+
+- 一张为期一天的通行证售价为 costs[0] 美元；
+- 一张为期七天的通行证售价为 costs[1] 美元；
+- 一张为期三十天的通行证售价为 costs[2] 美元。
+
+通行证允许数天无限制的旅行。 例如，如果我们在第 2 天获得一张为期 7 天的通行证，那么我们可以连着旅行 7 天：第 2 天、第 3 天、第 4 天、第 5 天、第 6 天、第 7 天和第 8 天。
+
+返回你想要完成在给定的列表 days 中列出的每一天的旅行所需要的最低消费。
+
+```html
+输入：days = [1,4,6,7,8,20], costs = [2,7,15]
+输出：11
+解释： 
+例如，这里有一种购买通行证的方法，可以让你完成你的旅行计划：
+在第 1 天，你花了 costs[0] = $2 买了一张为期 1 天的通行证，它将在第 1 天生效。
+在第 3 天，你花了 costs[1] = $7 买了一张为期 7 天的通行证，它将在第 3, 4, ..., 9 天生效。
+在第 20 天，你花了 costs[0] = $2 买了一张为期 1 天的通行证，它将在第 20 天生效。
+你总共花了 $11，并完成了你计划的每一天旅行。
+
+输入：days = [1,2,3,4,5,6,7,8,9,10,30,31], costs = [2,7,15]
+输出：17
+解释：
+例如，这里有一种购买通行证的方法，可以让你完成你的旅行计划： 
+在第 1 天，你花了 costs[2] = $15 买了一张为期 30 天的通行证，它将在第 1, 2, ..., 30 天生效。
+在第 31 天，你花了 costs[0] = $2 买了一张为期 1 天的通行证，它将在第 31 天生效。 
+你总共花了 $17，并完成了你计划的每一天旅行。
+```
+
+**思路：**如果不出行则等一等再购买车票更好，出行的话在三钟方案中选择消费最小的。加入一个判断，判断数组是否越界。dp[i] 表示到第 i 天所需要的最小花费。
+
+```java
+class Solution {
+    public int mincostTickets(int[] days, int[] costs) {
+        int lastday = days[days.length-1];
+        // 记录是否为出行日
+        boolean[] isTravel = new boolean[lastday+1];
+        for(int day : days) isTravel[day] = true;
+        int[] dp = new int[lastday+1];
+        for(int i = 1; i <= lastday; i++){
+            if(!isTravel[i]){
+                dp[i] = dp[i-1];
+                continue;
+            }
+            dp[i] = costs[0] + dp[i-1];
+            dp[i] = Math.min(dp[i], dp[Math.max(0, i-7)] + costs[1]);
+            dp[i] = Math.min(dp[i], dp[Math.max(0, i-30)] + costs[2]);
+        }
+        return dp[lastday];
+    }
 }
 ```
 

@@ -70,3 +70,83 @@ public int removeDuplicates(int[] nums) {
 }
 ```
 
+
+
+#### 按奇偶排序数组-905
+
+给定一个非负整数数组 `A`，返回一个数组，在该数组中， `A` 的所有偶数元素之后跟着所有奇数元素。你可以返回满足此条件的任何数组作为答案。
+
+```
+输入：[3,1,2,4]
+输出：[2,4,3,1]
+输出 [4,2,3,1]，[2,4,1,3] 和 [4,2,1,3] 也会被接受。
+```
+
+**思路：**双指针
+
+```java
+class Solution {
+    public int[] sortArrayByParity(int[] A) {
+        int l = 0, r = A.length-1;
+        while(l < r){
+            while( l < A.length && A[l] % 2 == 0) l++;
+            while( r >= 0 && A[r] % 2 == 1) r--;
+            if(l < r){
+                int temp = A[l];
+                A[l] = A[r];
+                A[r] = temp;
+            }            
+        }
+        return A;
+    }
+}
+```
+
+
+
+#### 按奇偶排序数组-II-922
+
+给定一个非负整数数组 A， A 中一半整数是奇数，一半整数是偶数。对数组进行排序，以便当 A[i] 为奇数时，i 也是奇数；当 A[i] 为偶数时， i 也是偶数。你可以返回任何满足上述条件的数组作为答案。
+
+**思路：**双指针
+
+```java
+class Solution {
+    public int[] sortArrayByParityII(int[] A) {
+        if(A.length < 2) return A;
+        int odd = 1, even = 0;
+        while(odd < A.length && even < A.length){
+            while(odd < A.length && A[odd] % 2 == 1) odd += 2;
+            while(even < A.length && A[even] % 2 == 0) even += 2;
+            if(odd < A.length && even < A.length){
+                int temp = A[odd];
+                A[odd] = A[even];
+                A[even] = temp;
+            }
+        }
+        return A;
+    }
+}
+```
+
+使用额外空间：
+
+```java
+class Solution {
+    public int[] sortArrayByParityII(int[] A) {
+        int[] B = new int[A.length];
+        int index1 = 0, index2 = 1;
+        for(int i = 0; i < A.length; i++){
+            if(A[i] % 2 == 0){
+                B[index1] = A[i];
+                index1 += 2;
+            }else{
+                B[index2] = A[i];
+                index2 += 2;
+            }
+        }
+        return B;
+    }
+}
+```
+

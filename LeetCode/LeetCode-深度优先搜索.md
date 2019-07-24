@@ -157,6 +157,74 @@ public int dfs(int[][] matrix, int i, int j, int m, int n, int[][] cache) {
 
 
 
+#### N叉树的最大深度-559
+
+给定一个 N 叉树，找到其最大深度。最大深度是指从根节点到最远叶子节点的最长路径上的节点总数。例如，给定一个 `3叉树` :
+
+![img](../../markdown%E7%AC%94%E8%AE%B0/%E5%9B%BE%E7%89%87/narytreeexample.png)
+
+我们应返回其最大深度，3。
+
+**思路：**和二叉树的最大深度类似，有递归和迭代两种解法；
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val,List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+class Solution {
+    public int maxDepth(Node root) {
+        return maxDepth1(root);
+    }
+    public int maxDepth1(Node root){
+        if(root == null) return 0;
+        int max = 0;
+        for(Node node : root.children){
+            int depth = maxDepth1(node);
+            max = Math.max(max, depth);
+        }
+        return max + 1;
+    }   
+}
+```
+
+**迭代：**
+
+```java
+class Solution {
+    public int maxDepth(Node root) {
+        if(root == null) return 0;
+        Queue<Node> q = new LinkedList();
+        int depth = 0;
+        q.add(root);
+        while(!q.isEmpty()){
+            int size = q.size();
+            depth++;
+            while(size > 0){
+                size--;
+                Node cur = q.poll();
+                for(Node n : cur.children){
+                    if(n != null) q.add(n);   
+                }
+            }
+        }
+        return depth;
+    }
+}
+```
+
+
+
 #### 被围绕的区域-130
 
 给定一个二维的矩阵，包含 `'X'` 和 `'O'`（**字母 O**）。

@@ -136,7 +136,7 @@ class Solution {
         int n = nums.length;
         int left = 0;
         int right = n - 1;
-        while (left < right) {
+        while (left < right) { // 此处判断条件改为 <= ,则返回值可以直接 return -1；
             int mid = left + (right - left) / 2;
             if (nums[mid] == target) return mid;
             else if (nums[left] <= nums[mid]) {
@@ -239,7 +239,7 @@ class Solution {
         int n = nums.length;
         if (n == 0) return res;
         int left = 0;
-        int right = n-1;
+        int right = n - 1;
         while (left <= right){
             int mid = left + (right - left) / 2;
             if (nums[mid] == target) {
@@ -359,6 +359,42 @@ class Solution {
             else right = mid - 1;
         }
         return right;   
+    }
+}
+```
+
+
+
+#### 寻找旋转排序数组中的最小值-153
+
+假设按照升序排序的数组在预先未知的某个点上进行了旋转。( 例如，数组 [0,1,2,4,5,6,7] 可能变为 [4,5,6,7,0,1,2] )。请找出其中最小的元素。你可以假设数组中不存在重复元素。
+
+```
+输入: [3,4,5,1,2]
+输出: 1
+
+输入: [4,5,6,7,0,1,2]
+输出: 0
+```
+
+旋转排序数组 `nums`可以被拆分为2个排序数组 `nums1, nums2`，并且`nums1`中所有元素比`nums2`大（因为nums中没有重复值）；
+
+1. 因此，考虑二分法寻找值`nums[i]`，满足 `nums[i] < nums[i-1] and nums[i] < nums[i+1]`
+2. 设置`left， right `指针在`nums` 数组两端，`mid`为中点：
+3. 当`nums[mid] > nums[right]`时，一定满足`mid < i <= right`，因此`left = mid + 1`；
+4. 当`nums[mid] < nums[right]`时，一定满足`left< i <= mid`，因此`right = mid`；
+5. 当`nums[mid] == nums[right]`时，说明数组长度`len(num) == 1`（因为计算mid向下取整）；当 `left = right`也满足，但本题 `left == right `时跳出循环。
+
+```java
+class Solution {
+    public int findMin(int[] nums) {
+        int left = 0, right = nums.length - 1;
+        while(left < right){
+            int mid = (left + right) / 2;
+            if(nums[mid] > nums[right]) left = mid + 1;
+            else right = mid;
+        }
+        return nums[left];
     }
 }
 ```

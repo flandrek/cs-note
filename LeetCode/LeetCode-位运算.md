@@ -38,6 +38,162 @@ public class Solution {
 
 
 
+#### 只出现一次的数字-136
+
+给定一个**非空**整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+```
+输入: [2,2,1]
+输出: 1
+
+输入: [4,1,2,1,2]
+输出: 4
+```
+
+**思路：**相同的数字异或结果为 0，因此可以将数组从头到尾异或一遍，最后剩下的就是只出现一次的数字。
+
+```java
+class Solution {
+    public int singleNumber(int[] nums) {
+        int res = 0;
+        for(int i = 0; i < nums.length; i++)
+            res ^= nums[i];
+        return res;
+    }
+}
+```
+
+
+
+#### 只出现一次的数字II-137
+
+给定一个**非空**整数数组，除了某个元素只出现一次以外，其余每个元素均出现了三次。找出那个只出现了一次的元素。**说明：**你的算法应该具有线性时间复杂度。 你可以不使用额外空间来实现吗？
+
+```
+输入: [2,2,3,2]
+输出: 3
+
+输入: [0,1,0,1,0,1,99]
+输出: 99
+```
+
+**思路：**将所有数字的二进制表示的对应位都加起来，如果某一位能被三整除，那么只出现一次的数字在该位为0，反之，为1。
+
+除了一个数字出现 M次外,其他数字都出现 K次( 0 < M < K)这个问题,其实此题的解法也是有效的，即
+
+ bitSum % k != 0；
+
+```java
+class Solution {
+    public int singleNumber(int[] nums) {
+        int res = 0;
+        int[] bits = new int[32];
+        for(int num : nums){
+             for(int j = 0; j < 32; j++) {
+                bits[j] += ((num >> j) & 1);
+            }
+        }
+        for(int i = 0; i < 32; i++){
+            if(bits[i] % 3 != 0)
+                res += (1 << i);
+        }
+        return res;
+    }
+}
+```
+
+```java
+class Solution {
+    public int singleNumber(int[] nums) {
+        int res = 0;
+        for(int i = 0; i < 32; i++){
+            int bitSum = 0;
+            int bit = 1 << i;
+            for(int num : nums){
+                if((num & bit) != 0)
+                    bitSum++;
+            }
+            if(bitSum % 3 != 0)
+                res |= bit;
+        }
+        return res;
+    }
+}
+```
+
+**这个看不懂！**
+
+```java
+class Solution {
+    public  static int singleNumber(int[] nums) {
+    	 int a = 0, b = 0;
+         for (int num : nums){
+             a = (a ^ num) & ~b;
+             b = (b ^ num) & ~a;
+         }
+         return a;
+     }
+}
+```
+
+
+
+#### 只出现一次的数字III-260
+
+给定一个整数数组 `nums`，其中恰好有两个元素只出现一次，其余所有元素均出现两次。 找出只出现一次的那两个元素。
+
+```
+输入: [1,2,1,3,2,5]
+输出: [3,5]
+```
+
+　**思路：**我们依旧从头到尾异或每个数字，那么最终的结果就是这两个只出现一次的数字的异或结果，由于两个数不同，因此这个结果数字中一定有一位为1，把结果中第一个1的位置记为第n位。因为是两个只出现一次的数字的异或结果，所以这两个数字在第n位上的数字一定是1和0。
+
+　　 接下来我们根据数组中每个数字的第 n 位上的数字是否为1来进行分组，恰好能将数组分为两个都只有一个数字只出现一次的数组，对两个数组从头到尾异或，就可以得到这两个数了。
+
+```java
+class Solution {
+    public int[] singleNumber(int[] nums) {
+        int res = 0;
+        for(int num : nums) res ^= num;
+        int index = 0;
+        while((res & index) == 0) index >>= 1;
+        int[] ans = new int[2];
+        for(int num : nums){
+            if((num & index) != 0)
+                ans[0] ^= num;
+            else ans[1] ^= num;
+        }
+        return ans;
+    }
+}
+```
+
+```java
+class Solution{
+	public int[] singleNumber(int[] nums) {
+        int res = 0;
+        for(int num : nums) res ^= num;
+        int index = 0;
+        while((res & 1) == 0 && index < 32){
+            res >>= 1;
+            index++;
+        }
+        int[] ans = {0, 0};
+        for(int i = 0; i < nums.length; i++){
+            if((nums[i] >> index & 1) == 1)
+                ans[0] ^= nums[i];
+            else ans[1] ^= nums[i];
+        }
+        return ans;
+    }
+}
+```
+
+
+
+
+
 #### 二进制中1个个数-比特位计算
 
 给定一个非负整数 **num**。对于 **0 ≤ i ≤ num** 范围中的每个数字 **i** ，计算其二进制数中的 1 的数目并将它们作为数组返回。
@@ -113,7 +269,63 @@ public int getSum(int a, int b) {
 
 
 
-#### 缺失的数字-268
+#### 可被5整除的二进制前缀-1018
+
+给定由若干 0 和 1 组成的数组 A。我们定义 N_i：从 A[0] 到 A[i] 的第 i 个子数组被解释为一个二进制数（从最高有效位到最低有效位）。
+
+返回布尔值列表 answer，只有当 N_i 可以被 5 整除时，答案 answer[i] 为 true，否则为 false。
+
+```
+输入：[0,1,1]
+输出：[true,false,false]
+解释：
+输入数字为 0, 01, 011；也就是十进制中的 0, 1, 3 。只有第一个数可以被 5 整除，因此 answer[0] 为真。
+
+输入：[0,1,1,1,1,1]
+输出：[true,false,false,false,true,false]
+
+输入：[1,1,1,0,1]
+输出：[false,false,false,false,false]
+```
+
+**思路：**采用十进制对5取模会超出位数，如果上一个数就能被 5 整除，那么再乘以 2 还是能被 5 整除，因此每次判断之后，将这个数对 5 取模。
+
+```java
+class Solution {
+    public List<Boolean> prefixesDivBy5(int[] A) {
+        List<Boolean> res = new ArrayList();
+        if(A == null || A.length == 0) return res;
+        int sum = 0;
+        for(int i = 0; i < A.length; i++){
+            sum = sum * 2 + A[i];
+            res.add(sum % 5 == 0);
+            sum = sum % 5;
+        }
+        return res;     
+    }
+}
+```
+
+使用位运算优化：
+
+```java
+class Solution {
+    public List<Boolean> prefixesDivBy5(int[] A) {
+        List<Boolean> res = new ArrayList();
+        if(A == null || A.length == 0) return res;
+        int sum = 0;
+        for(int i = 0; i < A.length; i++){
+            sum = (sum << 1 | A[i]) % 5;
+            res.add(sum == 0);
+        }
+        return res;     
+    }
+}
+```
+
+
+
+#### 缺失数字-268
 
 给定一个包含 `0, 1, 2, ..., n` 中 *n* 个数的序列，找出 0 .. *n* 中没有出现在序列中的那个数。
 
@@ -126,9 +338,9 @@ public int getSum(int a, int b) {
 
 **思路：**
 
-我们知道数组中有 nn 个数，并且缺失的数在 [0..n]中。因此我们可以先得到 [0..n] 的异或值，再将结果对数组中的每一个数进行一次异或运算。未缺失的数在 [0..n] 和数组中各出现一次，因此异或后得到 0。而缺失的数字只在 [0..n] 中出现了一次，在数组中没有出现，因此最终的异或结果即为这个缺失的数字。
+我们知道数组中有 n 个数，并且缺失的数在 [0..n] 中。因此我们可以先得到 [0..n] 的异或值，再将结果对数组中的每一个数进行一次异或运算。未缺失的数在 [0..n] 和数组中各出现一次，因此异或后得到 0。而缺失的数字只在 [0..n] 中出现了一次，在数组中没有出现，因此最终的异或结果即为这个缺失的数字。
 
-在编写代码时，由于 [0..n]恰好是这个数组的下标加上 nn，因此可以用一次循环完成所有的异或运算
+在编写代码时，由于 [0..n]恰好是这个数组的下标加上 n，因此可以用一次循环完成所有的异或运算
 
 ```java
 class Solution {

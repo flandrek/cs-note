@@ -46,6 +46,58 @@ class Solution{
 
 
 
+#### 单值二叉树-965
+
+如果二叉树每个节点都具有相同的值，那么该二叉树就是*单值*二叉树。只有给定的树是单值二叉树时，才返回 `true`；否则返回 `false`。
+
+```
+输入：[1,1,1,1,1,null,1]
+输出：true
+
+输入：[2,2,2,5,2]
+输出：false
+```
+
+**递归：**
+
+```java
+class Solution {
+    public boolean isUnivalTree(TreeNode root) {
+        boolean left = (root.left == null || 
+                        (root.val == root.left.val && isUnivalTree(root.left)));
+        boolean right = (root.right == null || 
+                         (root.val == root.right.val && isUnivalTree(root.right)));
+        return left && right;
+    }
+}
+```
+
+**思路2：**我们先进行一次深度优先搜索，获取这颗树中的所有节点的值。然后，就可以判断所有节点的值是不是都相等了。
+
+```java
+class Solution {
+    List<Integer> vals;
+    public boolean isUnivalTree(TreeNode root) {
+        vals = new ArrayList();
+        dfs(root);
+        for (int v: vals)
+            if (v != vals.get(0))
+                return false;
+        return true;
+    }
+
+    public void dfs(TreeNode node) {
+        if (node != null) {
+            vals.add(node.val);
+            dfs(node.left);
+            dfs(node.right);
+        }
+    }
+}
+```
+
+
+
 #### **对称二叉树**
 
 判断一个二叉树是不是对称二叉树。
@@ -157,23 +209,16 @@ class Solution {
 ```java
 class Solution {
     public TreeNode invertTree(TreeNode root) {
-        if(root == null || (root.left == null && root.right == null)) return root;
+        if(root == null) return null;
+        
         TreeNode temp = root.left;
         root.left = root.right;
         root.right = temp;
+        
         invertTree(root.left);
         invertTree(root.right);
         return root;
     }
-    
-    public TreeNode invertTree(TreeNode root) {
-    	if (root == null)  return null;
-    	TreeNode right = invertTree(root.right);
-    	TreeNode left = invertTree(root.left);
-    	root.left = right;
-    	root.right = left;
-    	return root;
- 	}
 }
 ```
 
@@ -200,6 +245,69 @@ public TreeNode invertTree(TreeNode root) {
     return root;
 }
 ```
+
+
+
+#### 二叉搜索树转换为累加树-538
+
+给定一个二叉搜索树（Binary Search Tree），把它转换成为累加树（Greater Tree)，使得每个节点的值是原来的节点值加上所有大于它的节点值之和。
+
+```
+输入: 二叉搜索树:
+              5
+            /   \
+           2     13
+
+输出: 转换为累加树:
+             18
+            /   \
+          20     13
+```
+
+**思路：**按右 -> 根 -> 左 的顺序进行遍历
+
+递归：
+
+```java
+class Solution {
+    int sum = 0;
+    public TreeNode convertBST(TreeNode root) {       
+        if(root == null) return null;  
+        convertBST(root.right);
+        sum += root.val;
+        root.val = sum;
+        convertBST(root.left);
+        return root;        
+    }
+}
+```
+
+迭代：
+
+```java
+class Solution {
+    int sum = 0;
+    public TreeNode convertBST(TreeNode root) {
+        if(root == null) return null;    
+        Stack<TreeNode> s = new Stack();
+        TreeNode cur = root;
+        while(!s.isEmpty() || cur != null){
+            while(cur != null){
+                s.push(cur);
+                cur = cur.right;
+            }
+            cur = s.pop();
+            sum += cur.val;
+            cur.val = sum;
+            
+            cur = cur.left;
+        }
+        return root;
+    }
+}
+```
+
+
 
 
 
@@ -528,6 +636,185 @@ class Solution {
 
 
 
+#### N 叉树的最大深度-559
+
+给定一个 N 叉树，找到其最大深度。最大深度是指从根节点到最远叶子节点的最长路径上的节点总数。例如，给定一个 `3叉树` :
+
+![img](../图片/narytreeexample.png)
+
+我们应返回其最大深度，3。
+
+**思路：**和二叉树的最大深度类似，有递归和迭代两种解法；
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val,List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+class Solution {
+    public int maxDepth(Node root) {
+        return maxDepth1(root);
+    }
+    public int maxDepth1(Node root){
+        if(root == null) return 0;
+        int max = 0;
+        for(Node node : root.children){
+            int depth = maxDepth1(node);
+            max = Math.max(max, depth);
+        }
+        return max + 1;
+    }   
+}
+```
+
+**迭代：**
+
+```java
+class Solution {
+    public int maxDepth(Node root) {
+        if(root == null) return 0;
+        Queue<Node> q = new LinkedList();
+        int depth = 0;
+        q.add(root);
+        while(!q.isEmpty()){
+            int size = q.size();
+            depth++;
+            while(size > 0){
+                size--;
+                Node cur = q.poll();
+                for(Node n : cur.children){
+                    if(n != null) q.add(n);   
+                }
+            }
+        }
+        return depth;
+    }
+}
+```
+
+
+
+#### N 叉树的前序遍历-589
+
+给定一个 N 叉树，返回其节点值的*前序遍历*。
+
+![img](../图片/narytreeexample-1562837653269.png)
+
+返回其前序遍历: [1,3,5,6,2,4]。
+
+**递归：**
+
+```java
+public List<Integer> preorder1(Node root) {
+    List<Integer> res = new ArrayList<>();
+    if (root == null) return res;
+    helper(root, res);
+    return res;
+}
+
+private void helper(Node root, List<Integer> res) {
+    if (root == null) return;
+    res.add(root.val);
+    for (Node node : root.children) {
+        helper(node, res);
+    }
+}
+```
+
+**迭代：**
+
+```java
+public List<Integer> preorder2(Node root) {
+    List<Integer> res = new ArrayList<>();
+    if (root == null) return res;
+    Stack<Node> stack = new Stack<>();
+    stack.push(root);
+    while (!stack.isEmpty()) {
+        Node cur = stack.pop();
+        //头结点加入结果集
+        res.add(cur.val);
+        //将该节点的子节点从右往左压入栈
+        List<Node> nodeList = cur.children;
+        for (int i = nodeList.size() - 1; i >= 0; i--) {
+            stack.push(nodeList.get(i));
+        }
+    }
+    return res;
+}
+```
+
+
+
+#### N 叉树的后序遍历-590
+
+给定一个 N 叉树，返回其节点值的*后序遍历*。
+
+返回其后序遍历: `[5,6,3,2,4,1]`
+
+**递归：**
+
+```java
+class Solution {
+    public List<Integer> postorder(Node root) {
+        List<Integer> res = new ArrayList();
+        post(root, res);
+        return res;
+    }
+    
+    public void helper(Node root, List<Integer> list){
+        if(root == null) return;
+        for(Node node : root.children){
+            helper(node, list);
+        }
+        list.add(root.val);
+    }
+}
+```
+
+**非递归：**
+
+```java
+public List<Integer> postorder2(Node root) {
+    List<Integer> res = new ArrayList<>();
+    if (root == null) return res;
+    //前指针
+    Node pre = null;
+    Stack<Node> stack = new Stack<>();
+    stack.push(root);
+    while (!stack.isEmpty()) {
+        Node cur = stack.peek();
+        if ((cur.children.size() == 0) || (pre != null && cur.children.contains(pre))) {
+            //加入结果集
+            res.add(cur.val);
+            stack.pop();
+            //更新pre指针
+            pre = cur;
+        } else {
+            //继续压栈，注意压栈是从右往左
+            List<Node> nodeList = cur.children;
+            for (int i = nodeList.size() - 1; i >= 0; i--) {
+                stack.push(nodeList.get(i));
+            }
+        }
+    }
+    return res;
+}
+```
+
+
+
+
+
 #### 验证二叉搜索树-98
 
 给定一个二叉树，判断其是否是一个有效的二叉搜索树，假设一个二叉搜索树具有如下特征：
@@ -556,7 +843,7 @@ class Solution {
 class Solution{
 	long pre = Long.MIN_VALUE;
     public boolean isValidBST(TreeNode root) {
-        if(root == null) return true;       
+        if(root == null) return true;        
         if(isValidBST(root.left)) {
             if(pre < root.val) {
                 pre = root.val;
@@ -580,8 +867,8 @@ class Solution {
         		stack.push(root);
         		root = root.left;
       		 }
-      	root = stack.pop();
-      	if (root.val <= inorder) return false;
+            root = stack.pop();
+            if (root.val <= inorder) return false;
       		inorder = root.val;
       		root = root.right;
     	}
@@ -679,7 +966,7 @@ root = [10,5,-3,3,2,null,11,3,-2,null,1], sum = 8
 **递归实现：**
 
 ```java
-class Sloution{
+class Solution{
 /* 有了以上铺垫，详细注释一下代码 */
     int pathSum(TreeNode root, int sum) {
         if (root == null) return 0;
@@ -704,10 +991,10 @@ class Sloution{
 **回溯法：**
 
 第一种做法很明显效率不够高，存在大量重复计算；
-所以第二种做法，采取了类似于数组的前 n 项和的思路，比如sum[4] == sum[1]，那么1到4之间的和肯定为 0
+所以第二种做法，采取了类似于数组的前 n 项和的思路，比如 sum[4] == sum[1]，那么1到4之间的和肯定为 0。
 
-对于树的话，采取DFS加回溯，每次访问到一个节点，把该节点加入到当前的pathSum中，然后判断是否存在一个之前的前 n 项和，其值等于 pathSum 与 sum 之差；
-如果有，就说明现在的前n项和，减去之前的前n项和，等于sum，那么也就是说，这两个点之间的路径和，就是sum，最后要注意的是，记得回溯，把路径和弹出去。
+对于树的话，采取 DFS 加回溯，每次访问到一个节点，把该节点加入到当前的pathSum中，然后判断是否存在一个之前的前 n 项和，其值等于 pathSum 与 sum 之差；
+如果有，就说明现在的前 n 项和，减去之前的前 n 项和，等于 sum，那么也就是说，这两个点之间的路径和，就是 sum，最后要注意的是，记得回溯，把路径和弹出去。
 
 ```java
 class Solution{
@@ -729,7 +1016,7 @@ class Solution{
         map.put(sum, map.getOrDefault(sum, 0) + 1);
         // 将当前数量 + 左子树 + 右子树
         int res = numPathToCurr + findPathSum(curr.left, sum, target, map)
-                                      + findPathSum(curr.right, sum, target, map);
+                                + findPathSum(curr.right, sum, target, map);
        	// 还原映射-回溯
         map.put(sum, map.get(sum) - 1);
         return res;
@@ -1036,6 +1323,132 @@ class Solution {
         max = Math.max(root.val + left + right, max);
         int tmp = Math.max(left, right) + root.val;
         return tmp > 0 ? tmp : 0;
+    }
+}
+```
+
+
+
+#### 修剪二叉搜索树-669
+
+给定一个二叉搜索树，同时给定最小边界L 和最大边界 R。通过修剪二叉搜索树，使得所有节点的值在 [L, R]  中
+
+ (R >= L) 。你可能需要改变树的根节点，所以结果应当返回修剪好的二叉搜索树的新的根节点。
+
+```
+输入: 
+    3
+   / \
+  0   4
+   \
+    2
+   /
+  1
+
+  L = 1
+  R = 3
+
+输出: 
+      3
+     / 
+   2   
+  /
+ 1
+```
+
+**递归：**
+
+当 node.val > R，那么修剪后的二叉树必定出现在节点的左边。
+
+类似地，当 node.val < L，那么修剪后的二叉树出现在节点的右边。否则，我们将会修剪树的两边。
+
+时间和空间复杂度均为 O (N)
+
+```java
+class Solution {
+    public TreeNode trimBST(TreeNode root, int L, int R) {
+        if (root == null) return root;
+        if (root.val > R) return trimBST(root.left, L, R);
+        if (root.val < L) return trimBST(root.right, L, R);
+
+        root.left = trimBST(root.left, L, R);
+        root.right = trimBST(root.right, L, R);
+        return root;
+    }
+}
+```
+
+
+
+#### 二叉树的所有路径-257
+
+给定一个二叉树，返回所有从根节点到叶子节点的路径。**说明:** 叶子节点是指没有子节点的节点。
+
+```
+输入:
+   1
+ /   \
+2     3
+ \
+  5
+输出: ["1->2->5", "1->3"]
+解释: 所有根节点到叶子节点的路径为: 1->2->5, 1->3
+```
+
+**递归：**在递归遍历二叉树时，需要考虑当前的节点和它的孩子节点。如果当前的节点不是叶子节点，则在当前的路径末尾添加该节点，并递归遍历该节点的每一个孩子节点。如果当前的节点是叶子节点，则在当前的路径末尾添加该节点后，就得到了一条从根节点到叶子节点的路径，可以把该路径加入到答案中。
+
+```java
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> res = new ArrayList();
+        allpaths(root, "", res);
+        return res;
+    }
+    
+    public void allpaths(TreeNode root, String path, List<String> paths){
+        if(root == null) return;
+        path += root.val + "";
+        if(root.left == null && root.right == null){
+            paths.add(path);
+        }else{
+            path += "->";  // 当前节点不是叶子节点，继续递归遍历
+            allpaths(root.left, path, paths);
+            allpaths(root.right, path, paths);
+        }
+    }
+}
+```
+
+**迭代：**上面的算法也可以使用迭代（宽度优先搜索）的方法实现。我们维护一个队列，存储节点以及根到该节点的路径。一开始这个队列里只有根节点。在每一步迭代中，我们取出队列中的首节点，如果它是一个叶子节点，则将它对应的路径加入到答案中。如果它不是一个叶子节点，则将它的所有孩子节点加入到队列的末尾。当队列为空时，迭代结束。
+
+```java
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        LinkedList<String> paths = new LinkedList();
+        if (root == null)
+            return paths;
+
+        LinkedList<TreeNode> node_stack = new LinkedList();
+        LinkedList<String> path_stack = new LinkedList();
+        node_stack.add(root);
+        path_stack.add(Integer.toString(root.val));
+        TreeNode node;
+        String path;
+        while (!node_stack.isEmpty()) {
+            node = node_stack.pollLast();
+            path = path_stack.pollLast();
+            if ((node.left == null) && (node.right == null))
+                paths.add(path);
+            if (node.left != null) {
+                node_stack.add(node.left);
+                path_stack.add(path + "->" + Integer.toString(node.left.val));
+            }
+            if (node.right != null) {
+                node_stack.add(node.right);
+                path_stack.add(path + "->" + Integer.toString(node.right.val));
+            }
+        }
+        return paths;
     }
 }
 ```

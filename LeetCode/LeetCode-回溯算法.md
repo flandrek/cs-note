@@ -60,6 +60,55 @@ public List<List<Integer>> subsets(int[] nums) {
 
 ![1560502244448](E:\markdown笔记\图片\1560502244448.png)
 
+#### 子集II-90
+
+给定一个可能包含重复元素的整数数组 ***nums***，返回该数组所有可能的子集（幂集）。
+
+**说明：**解集不能包含重复的子集。
+
+```
+输入: [1,2,2]
+输出:
+[
+  [2],
+  [1],
+  [1,2,2],
+  [2,2],
+  [1,2],
+  []
+]
+```
+
+**回溯法：**因为不能有重复的子集，因此要先将数据进行排序，再递归的时候出现相同的元素就跳过。
+
+```java
+class Solution {    
+    List<List<Integer>> res = new ArrayList();    
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        List<Integer> list = new ArrayList();
+        backtrack(nums, 0, list);
+        return res;        
+    }
+    
+    public void backtrack(int[] nums, int start, List<Integer> list){        
+        res.add(new ArrayList(list));
+        for(int i = start; i < nums.length; i++){
+            if(i > start && nums[i-1] == nums[i]) continue;
+            list.add(nums[i]);
+            backtrack(nums, i+1, list);
+            list.remove(list.size()-1);
+        }                
+    }
+}
+```
+
+
+
+
+
+
+
 #### 全排列-46
 
 给定一个**没有重复**数字的序列，返回其所有可能的全排列。
@@ -161,24 +210,130 @@ private void backtrack(List<List<Integer>> list, List<Integer> tempList, int [] 
 
 ```java
 class Solution {
-    public List<List<Integer>> combinationSum(int[] candidates, int target) {
-        List<List<Integer>> res = new ArrayList<>();
+    
+    List<List<Integer>> res = new ArrayList<>();
+    
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {        
         Arrays.sort(candidates);
         backtrack(candidates, target, res, 0, new ArrayList<Integer>());
         return res;
     }
 
-    private void backtrack(int[] candidates, int target, List<List<Integer>> res, int i, 						ArrayList<Integer> tmp_list) {
+    private void backtrack(int[] candidates, int target, int i, 			                                            ArrayList<Integer> list) {
         if (target < 0) return;
         if (target == 0) {
-            res.add(new ArrayList<>(tmp_list));
+            res.add(new ArrayList<>(list));
             return;
         }
         for (int start = i; start < candidates.length; start++) {
             if (target < candidates[start]) break;
-            tmp_list.add(candidates[start]);
-            backtrack(candidates, target - candidates[start], res, start, tmp_list);
-            tmp_list.remove(tmp_list.size() - 1);
+            list.add(candidates[start]);
+            backtrack(candidates, target - candidates[start], start, list);
+            list.remove(list.size() - 1);
+        }
+    }
+}
+```
+
+
+
+#### 组合总和II-40
+
+给定一个数组 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。
+
+candidates 中的每个数字在每个组合中只能使用一次。
+
+```
+输入: candidates = [10,1,2,7,6,1,5], target = 8,
+所求解集为:
+[
+  [1, 7],
+  [1, 2, 5],
+  [2, 6],
+  [1, 1, 6]
+]
+
+输入: candidates = [2,5,2,1,2], target = 5,
+所求解集为:
+[
+  [1,2,2],
+  [5]
+]
+```
+
+**思路：**由于每个元素都只能使用一次，因此要在上一题的基础上多加一个判断，即：
+
+`if(i > start && candidates[i] == candidates[i-1]) continue;`
+
+```java
+class Solution {
+    
+    List<List<Integer>> res = new ArrayList();
+    
+    public List<List<Integer>> combinationSum2(int[] candidates, int target){
+        Arrays.sort(candidates);
+        List<Integer> list = new ArrayList();
+        backtrack(candidates, target, 0, list);
+        return res;
+    }
+    
+    public void backtrack(int[] candidates, int target, int start, 																List<Integer> list){
+        if(target < 0) return;
+        if(target == 0) {
+            res.add(new ArrayList(list));
+            return;
+        }
+        for(int i = start; i < candidates.length; i++){
+            if(target < candidates[i]) break;
+            if(i > start && candidates[i] == candidates[i-1]) continue;
+            list.add(candidates[i]);
+            backtrack(candidates, target-candidates[i], i+1, list);
+            list.remove(list.size()-1);
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+#### 组合总和III-216
+
+找出所有相加之和为 n 的 k 个数的组合。组合中只允许含有 1 - 9 的正整数，并且每种组合中不存在重复的数字。
+
+说明：1.所有数字都是正整数；2.解集不能包含重复的组合。 
+
+```
+输入: k = 3, n = 7
+输出: [[1,2,4]]
+
+输入: k = 3, n = 9
+输出: [[1,2,6], [1,3,5], [2,3,4]]
+```
+
+**思路：**先将数组排序，然后使用回溯法。
+
+```java
+class Solution {
+    List<List<Integer>> res = new ArrayList();
+    public List<List<Integer>> combinationSum3(int k, int n) {
+        List<Integer> list = new ArrayList();
+        backtrack(k, n, 1, list);
+        return res;
+    }
+    
+    public void backtrack(int k, int n, int start, List<Integer> list){
+        
+        if(list.size() == k && n == 0) 
+            res.add(new ArrayList(list));
+        for(int i = start; i <= 9; i++){
+            if(i > n) break;
+            list.add(i);
+            backtrack(k, n-i, i+1, list);
+            list.remove(list.size()-1);
         }
     }
 }
@@ -546,6 +701,173 @@ public int dfs(int[][] matrix, int i, int j, int m, int n, int[][] cache) {
     }
     cache[i][j] = max;
     return max;
+}
+```
+
+
+
+#### 字母大小写全排列-784
+
+给定一个字符串`S`，通过将字符串`S`中的每个字母转变大小写，我们可以获得一个新的字符串。返回所有可能得到的字符串集合。
+
+```java
+示例:
+输入: S = "a1b2"
+输出: ["a1b2", "a1B2", "A1b2", "A1B2"]
+
+输入: S = "3z4"
+输出: ["3z4", "3Z4"]
+
+输入: S = "12345"
+输出: ["12345"]
+```
+
+**思路：**
+
+大小写字母切换：s[i] ^= (1 << 5)；
+
+大小写字母相差 32,又因为异或重要特性:不进位加法,所以大写字母和(1<<5)异或变成变成小写字母,小写字母和(1<<5) 异或变成大写字母。
+
+```java
+class Solution {
+    public List<String> letterCasePermutation(String S) {
+        List<String> ans = new ArrayList<String>();
+        backtrack(S.toCharArray(), 0, ans);
+        return ans;
+    }
+    public void backtrack(char[] s, int i, List<String> ans){
+        if(i == s.length){
+            ans.add(String.valueOf(s));
+            return;
+        }
+        backtrack(s, i+1, ans);
+        if(s[i] <'0' || s[i] > '9'){
+            s[i] ^= (1 << 5);
+            backtrack(s, i+1, ans);
+        }     
+    }
+}
+```
+
+先进入小写进入递归，再变成大写进入递归。
+
+```java
+class Solution {
+    private List<String> res;
+    private List<String> resByCallFunc;
+    
+    public List<String> letterCasePermutationByCallFunc(String S) {
+        resByCallFunc = new LinkedList<>();
+        solve(S.toCharArray(),0);
+        return resByCallFunc;
+    }
+
+    private void solveByCallFunc(char[] data, int index){
+        if(index == data.length){
+            resByCallFunc.add(new String(data));
+            return;
+        }
+        if(Character.isDigit(data[index])){
+            solve(data,index + 1);
+        }
+        else{
+            data[index] = Character.toLowerCase(data[index]);
+            solve(data, index + 1);
+            data[index] = Character.toUpperCase(data[index]);
+            solve(data, index + 1);
+        }
+    }
+}
+```
+
+
+
+#### 二进制手表-401
+
+二进制手表顶部有 4 个 LED 代表**小时（0-11）**，底部的 6 个 LED 代表**分钟（0-59）**。每个 LED 代表一个 0 或 1，最低位在右侧。
+
+![1562849230(1)](E:\markdown笔记\图片\1562849230(1).png)
+
+例如，上面的二进制手表读取 “3:25”。
+
+给定一个非负整数 *n* 代表当前 LED 亮着的数量，返回所有可能的时间。
+
+```
+输入: n = 1
+返回: ["1:00", "2:00", "4:00", "8:00", "0:01", "0:02", "0:04", "0:08", "0:16", "0:32"]
+
+输出的顺序没有要求。
+小时不会以零开头，比如 “01:00” 是不允许的，应为 “1:00”。
+分钟必须由两位数组成，可能会以零开头，比如 “10:2” 是无效的，应为 “10:02”。
+```
+
+**思路1：**
+
+统计总共亮灯的个数，统计小时和分钟数的二进制中 ‘ 1 ’ 的数量，数量等于 num 的都是符合要求的组合。
+
+```java
+class Solution {
+    public List<String> readBinaryWatch(int num) {
+        List<String> res = new ArrayList();
+        for(int h = 0; h < 12; h++){
+            for(int m = 0; m < 60; m++){
+                if(bitCount(m) + bitCount(h) == num){
+                    // res.add(String.format("%d:%02d", i, j));
+                    res.add(h + (m < 10 ? ":0" : ":") + m);
+                }
+            }
+        }
+        return res;
+    }
+    // 自定义的 bitCount，也可以使用系统的 bitCount
+    public int bitCount(int n){
+        int res = 0;
+        while(n != 0){
+            res++;
+            n = n & (n - 1);
+        }
+        return res;
+    }
+}
+```
+
+**思路2：**使用回溯法
+
+```java
+public class Solution {
+    public List<String> readBinaryWatch(int num) {
+        List<String> res = new ArrayList<>();
+        int[] nums1 = new int[]{8, 4, 2, 1}, nums2 = new int[]{32, 16, 8, 4, 2, 1};
+        for(int i = 0; i <= num; i++) {
+            List<Integer> list1 = generateDigit(nums1, i);
+            List<Integer> list2 = generateDigit(nums2, num - i);
+            for(int num1: list1) {
+                if(num1 >= 12) continue;
+                for(int num2 : list2) {
+                    if(num2 >= 60) continue;
+                    res.add(num1 + ":" + (num2 < 10 ? "0" + num2 : num2));
+                }
+            }
+        }
+        return res;
+    }
+
+    private List<Integer> generateDigit(int[] nums, int count) {
+        List<Integer> res = new ArrayList<>();
+        generateDigitHelper(nums, count, 0, 0, res);
+        return res;
+    }
+
+    private void generateDigitHelper(int[] nums, int count, int pos, int sum, 													List<Integer> res) {
+        if(count == 0) {
+            res.add(sum);
+            return;
+        }
+
+        for(int i = pos; i < nums.length; i++) {
+            generateDigitHelper(nums, count - 1, i + 1, sum + nums[i], res);    
+        }
+    }
 }
 ```
 
